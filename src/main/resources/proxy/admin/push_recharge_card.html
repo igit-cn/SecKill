@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+	<meta name="renderer" content="webkit"> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>出卡</title>
+    <script src="static/base/javascripts/require.js"></script>
+    <script src="static/common/common.min.js"></script>
+    <link href="static/base/stylesheets/dialogform.css" rel="stylesheet" type="text/css">
+</head>
+
+<body style="width:400px">
+   <form method="post" id="webForm" action="pushRechargeCard">
+   <input type="hidden" name="fromProxyName" id="fromProxyName" />
+   <input type="hidden" name="token" id="token" />
+    <table class="table-form">
+        <tr>
+            <th>充值码类型</th>
+            <td>
+                <select name="rechargeType" id="rechargeType"></select>
+            </td>
+        </tr>
+        <tr>
+            <th>个数</th>
+            <td>
+                <input type="text" name="count" placeholder="请输入个数" />
+            </td>
+        </tr>
+        <tr>
+            <th>前缀</th>
+            <td>
+                <input type="text" name="firstStr" maxlength="5" placeholder="5个字以内，只能是数字或字母" />
+            </td>
+        </tr>
+        <tr>
+            <th>备注</th>
+            <td><input type="text" name="remark" ></td>
+        </tr>
+    </table>
+    <div class="form-btn-bar">
+        <button class="btn btn-primary" type="submit">确定</button>
+        <button class="btn" id="cancelBtn" type="button">取消</button>
+    </div>
+    </form>
+    <script>
+        $(function() {
+            var url = $.url(location.href);
+            var proxyName = decodeURI(url.param('proxy_name'));
+            var token = $.getToken();
+            
+            if($.empty(proxyName)) {
+                $.sui.error('缺少参数或参数无效。');
+                return false;
+            }
+            
+            // 出卡类型
+            $.apiGet('getRechargeCodeTypeList', function(res) {
+                var strHtml = '';
+                for(var i = 0; i < res.data.length; ++i) {
+                    var data = res.data[i];
+                    strHtml += '<option value="'+data.type+'">'+data.tips+'</option>';
+                }
+                $('#rechargeType').html(strHtml);
+            })
+            
+            $('#fromProxyName').val(proxyName);
+            $('#token').val(token);
+            
+            // 提交表单
+            $('#webForm').apiForm(function(form) {
+                var rechargeType = $.trim(form.rechargeType.value);
+                var count = $.trim(form.count.value);
+                var remark = $.trim(form.remark.value);
+                var firstStr = $.trim(form.firstStr.value);
+                
+                if(rechargeType.length <= 0) {
+                    $.sui.alert('请输入充值码类型。', function() {
+                        form.rechargeType.focus();
+                    });
+                    return false;
+                }
+                
+                if(count.length <= 0) {
+                    $.sui.alert('请输入个数。', function() {
+                        form.count.focus();
+                    });
+                    return false;
+                }
+                
+                if(firstStr.length <= 0) {
+                    $.sui.alert('请输入前缀。', function() {
+                        form.firstStr.focus();
+                    });
+                    return false;
+                }
+                
+                if(!/^[0-9A-Za-z]{1,5}$/.test(firstStr)) {
+                    $.sui.alert('前缀无效，请输入5个以内的字母或数字。', function() {
+                        form.firstStr.focus();
+                    });
+                    return false;
+                }
+                
+                if(!/^\d+$/.test(count)) {
+                    $.sui.alert('个数不是一个有效的数字', function() {
+                        form.count.focus();
+                    });
+                    return false;
+                }
+            }, function(res) {
+                $.sui.success(res.msg);
+				$.sui.dialog.close();
+            })
+            
+            // 取消
+            $('#cancelBtn').on('click', function() {
+                $.sui.dialog.close();
+            });
+        })
+    </script>
+</body>
+</html>

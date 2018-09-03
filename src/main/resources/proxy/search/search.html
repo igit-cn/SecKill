@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>查询充值码状态</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="renderer" content="webkit">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <script src="static/javascripts/require.js"></script>
+    <link href="static/stylesheets/search.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div class="ui-view">
+  
+    <div class="ui-form form-01">
+        <ul class="sui-list">
+            <li>
+                <dl class="sui-cell-default text-bar">
+                    <dt>充值码</dt>
+                    <dd>
+                        <input id="rechargeCode" type="text" placeholder="请输入充值码" />
+                    </dd>
+                </dl>
+            </li>
+            <li>
+                <dl class="sui-cell-default text-bar-verifycode">
+                    <dt>验证码</dt>
+                    <dd>
+                        <input class="verifyCode" type="text" placeholder="请输入验证码" />
+                        <div id="verifyCode"></div>
+                    </dd>
+                </dl>
+            </li>
+        </ul>
+        <div class="btn-wrap">
+            <button class="ui-btn">查询</button>
+        </div>
+    </div>
+</div>
+
+<script id="resultTpl" type="text/x-dot-template">
+<div class="dialog-result">
+    <dl>
+        <dt>充值码类型：</dt>
+        <dd>{{=it.type}}</dd>
+    </dl>
+    <dl>
+        <dt>充值码状态：</dt>
+        <dd>{{=it.status}}</dd>
+    </dl>
+</div>
+</script>
+
+<script>
+$(function() {
+    // 提交查询
+    $('.ui-btn').on('click', function() {
+        $.apiPost('/queryRechargeCodeStatus', {
+            rechargeCode : $('#rechargeCode').val(),
+            verifyCode : $('.verifyCode').val()
+        }, function (data) {
+            var json = JSON.parse(data.returnData);
+            var tpl = doT.template($('#resultTpl').text())(json);
+            $.alert(tpl, '查询结果');
+        }, function (data) {
+            $.toastError(data.returnData);
+        });
+        verifyCode()
+    });
+    
+    var verifyCode = function (){
+        $.apiPost('/user/verifyCode', {}, function (data) {
+            document.getElementById('verifyCode').innerHTML = data.returnData;
+        }, function (data) {
+            $.toastError(data.returnData);
+        });
+    }
+    
+    //获取验证码
+    $('#verifyCode').on('click', function() {
+        verifyCode()
+    });
+    verifyCode()
+});
+</script>
+</body>
+</html>

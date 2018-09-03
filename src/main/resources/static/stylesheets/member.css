@@ -1,0 +1,132 @@
+@charset "utf-8";
+.list li {
+    position: relative
+}
+
+.list label {
+    display: block;
+    padding-left: 2.25rem
+}
+
+.list label:active {
+    opacity: .7
+}
+
+.list .checkbox-box {
+    display: inline-block;
+    width: .8rem;
+    height: .8rem;
+    background: url(../images/icon_checkbox.png) top no-repeat;
+    background-size: .8rem auto;
+    vertical-align: middle;
+    position: absolute;
+    left: .7rem;
+    top: 50%;
+    margin-top: -.4rem
+}
+
+.list input {
+    display: none
+}
+
+.list input:checked ~ .checkbox-box {
+    background-position: bottom
+}
+
+.list .info-wrap {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center
+}
+
+.list .avatar {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    margin-right: .7rem;
+    margin-left: .6rem;
+}
+
+.list .info {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    padding: 1rem 0
+}
+
+.list .info .name {
+    font-size: .7rem;
+    color: #333
+}
+
+.foot-bar-fiexd {
+    width: 100%;
+    height: 3.4rem
+}
+
+.foot-bar {
+    width: 100%;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 9
+}
+
+.foot-bar p {
+    display: block;
+    padding: 0 .8rem 1rem
+}
+
+.foot-bar ul {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex
+}
+
+.foot-bar ul li {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    padding: 0 0 1rem 1rem
+}
+
+.foot-bar ul li:last-child {
+    padding-right: 1rem
+}
+
+.foot-bar button {
+    width: 100%;
+    height: 2.2rem;
+    text-align: center;
+    background-color: #4f7bee;
+    font-size: .8rem;
+    color: #fff;
+    box-shadow: 0 .2rem .6rem .1rem rgba(79, 123, 238, .3);
+    border-radius: .3rem
+}
+
+.foot-bar button:active {
+    opacity: .7
+}
+
+.foot-bar button:disabled {
+    background-color: #ccc;
+    box-shadow: none;
+    color: hsla(0, 0%, 100%, .75)
+}
+
+.foot-bar button:disabled:active {
+    opacity: 1
+}
+
+.ui-pc .foot-bar {
+    width: 32rem;
+    left: 50%;
+    margin-left: -16rem
+}

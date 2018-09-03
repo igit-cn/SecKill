@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>云秒 - 管理后台</title>
+    <script src="static/base/javascripts/require.js"></script>
+    <script src="static/common/common.min.js"></script>
+    <link href="static/base/stylesheets/admincp.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div id="webView">
+    <div class="admincp-container">
+    	<div class="admincp-menu">
+    		<div class="menu-top">
+    			<img src="static/base/images/avatar.jpg" class="logo" />
+    		</div>
+    		<div class="menu-list">
+
+				<div class="menu-box">
+					<a href="javascript:void(0)" class="parent">
+						<i class="icon-menu icon-default"></i>
+						后台菜单
+						<span class="fa fa-angle-down"></span>
+					</a>
+					<ul class="menu-sub" style="display:none;">
+						<li><a data-href="agency.html" href="javascript:void(0)">代理列表</a></li>
+						<li><a data-href="recharge.html" href="javascript:void(0)">充值码列表</a></li>
+						<li><a data-href="users.html" href="javascript:void(0)">用户列表</a></li>
+				    </ul>
+				</div>
+
+            </div>
+    	</div>
+    	
+    	<div class="admincp-main">
+    		<div class="admincp-header">
+    			<div class="left">
+    				<a href="javascript:void(0)" title="展开/收缩菜单" id="navSwitch" class="btn btn-success"><i class="fa fa-bars"></i></a>
+    			</div>
+    			<div class="right">
+    				<div id="welcome" class="admin-user-info"></div>
+    				<div class="user-panel">
+						<a href="javascript:void(0)" id="exitButton"><i class="fa fa-sign-in"></i> 退出系统</a>
+    				</div>
+    			</div>
+			</div>
+   		
+    		<iframe id="iframeMain" style="overflow:visible;" frameborder="0" width="100%" height="94%" scrolling="yes"></iframe>
+    	</div>
+    	
+    </div>
+</div>
+    
+<script type="text/javascript">
+var _parentCookie = "@_MENU_PARENT_ID";
+var _currentCookie = "@_MENU_CURRENT_ID";
+$(function() {
+    $('.admincp-header .user-panel .iframe').click(function() {
+        var url = $(this).data('href');
+        $('#iframeMain').attr('src', url);
+    });
+    $(document).tooltip({
+        track: true
+    });
+    $(document).tooltip('destroy');
+    function greetings(){
+        var day = new Date;
+        var hr = day.getHours();
+        if(hr > -1 && hr < 6) return '夜深了';
+        if(hr > 5 && hr < 11) return '早上好';
+        if(hr > 10 && hr < 15) return '中午好';
+        if(hr > 14 && hr < 19) return '下午好';
+        if(hr > 18 && hr < 24) return '晚上好';
+    }
+    var userInfo = $.getLoginInfo();
+    $('#welcome').html(userInfo.proxy_name + ' ' + greetings() + '，欢迎您~！');
+    var navFlag = true;
+    $('#navSwitch').click(function() {
+        if(navFlag) {
+            navFlag = false;
+            $('.admincp-menu').animate({width:0}, 'fast');
+            $('.admincp-main').animate({left:0}, 'fast');
+        } else {
+            navFlag = true;
+            $('.admincp-menu').animate({width:'219px'}, 'fast');
+            $('.admincp-main').animate({left:'219px'}, 'fast');
+        }
+    });
+    $('.admincp-menu').slimscroll({
+        width: '219px',
+        height: '100%'
+    });
+    $('.menu-box .parent').click(function() {
+        $('.menu-box-highlight').removeClass('menu-box-highlight');
+        $(this).parent().addClass('menu-box-highlight');
+        $('.menu-box .parent .fa-angle-up').removeClass('fa-angle-up').addClass('fa-angle-down');
+        if($(this).next('ul').is(':hidden')) {
+            $(this).children('.fa').removeClass('fa-angle-down').addClass('fa-angle-up');
+            $('.menu-sub').slideUp('fast');
+            $(this).next('ul').slideDown('fast');
+        } else {
+            $(this).children('.fa').removeClass('fa-angle-up').addClass('fa-angle-down');
+            $(this).next('ul').slideUp('fast');
+        }
+    });
+    $('.menu-sub a, .selfMenu').click(function() {
+        $('.no-child .active').removeClass('active');
+        $('.menu-sub .current').removeClass('current');
+        $(this).parent().addClass('current');
+        $('#iframeMain').attr('src', $(this).data('href'));
+        var parentId = $('.menu-sub').index($(this).parent().parent());
+        var currentId = $(this).parent().index();
+        $.cookie(_parentCookie, parentId, {path:'/'});
+        $.cookie(_currentCookie, currentId, {path:'/'});
+
+    });
+    $('.selfMenu').click(function(){
+        $(this).addClass('active');
+        $('.menu-box-highlight .menu-sub').slideUp('slow', function() {
+            $(this).find('.current').removeClass('current');
+            $('.menu-box-highlight').removeClass('menu-box-highlight');
+        });
+
+    });
+    var initMenu = function(){
+        var parentId = $.cookie(_parentCookie);
+        var currentId = $.cookie(_currentCookie);
+        if(typeof parentId != 'undefined' && typeof currentId != 'undefined') {
+            $('.menu-sub').eq(parentId).find('li').eq(currentId).addClass('current');
+        }
+
+        var current = $('.menu-sub .current');
+        if(current.length <= 0) {
+            current = $('.menu-sub:eq(0)').find('li:eq(0)');
+            current.addClass('current');
+        }
+
+        current.parent().parent().addClass('menu-box-highlight')
+        .children('.parent').children('.fa').removeClass('fa-angle-down').addClass('fa-angle-up');
+        current.parent().show();
+        var url = current.children('a').data('href');
+        $('#iframeMain').attr('src', url);
+        $('#iframeMain').attr('src', $('.no-child .active').data('href'));
+    };
+    initMenu();
+    $('#exitButton').click(function() {
+        $.removeToken();
+        location.reload();
+    })
+});
+    
+function redirectMenu(id) {
+    var _this = $('.menu-sub a').eq(id);
+    $('.no-child .active').removeClass('active');
+    $('.menu-sub .current').removeClass('current');
+    _this.parent().addClass('current');
+    $('#iframeMain').attr('src', _this.data('href'));
+    var parentId = $('.menu-sub').index(_this.parent().parent());
+    var currentId = _this.parent().index();
+    $.cookie(_parentCookie, parentId, {path:'/'});
+    $.cookie(_currentCookie, currentId, {path:'/'});
+}
+</script>
+</body>
+</html>

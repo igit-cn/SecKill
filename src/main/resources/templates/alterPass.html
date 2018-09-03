@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>登录</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <script src="javascripts/require.js"></script>
+    <link href="stylesheets/register.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+<div class="ui-view">
+  
+  <div class="form-wrap">
+      <div class="form">
+          <h1>重置密码</h1>
+          <div class="input-wrap sui-border-b">
+              <input id="userName" type="text" placeholder="请输入帐号" />
+          </div>
+          <div class="input-wrap sui-border-b">
+              <input id="userPassword" type="text" placeholder="请输入密码" />
+          </div>
+          <div class="input-wrap sui-border-b">
+              <input id="affirmPassword" type="text" placeholder="请再次输入密码" />
+          </div>
+          <div class="input-wrap sui-border-b">
+              <input id="emailVerifyCode" type="text" placeholder="请输入邮箱验证码" />
+              <div class="sendEmailCode sui-border-l">
+                  <div id="sendEmailCode" class="verifycode-text">发送验证码</div>
+              </div>
+              
+          </div>
+          <div class="input-wrap sui-border-b">
+              <input id="userVerifyCode" type="text" placeholder="请输入验证码" class="verifycode-input" />
+              <div class="verifycode sui-border-l">
+                  <div id="verifyCode" class="verifycode-text"></div>
+              </div>
+          </div>
+          <div class="button-wrap">
+              <button id="submitButton">确定</button>
+          </div>
+      </div>
+  </div>
+   
+</div>
+<script type="text/javascript">
+    var refreshVerifyCode = function () {
+        $.apiPost('/user/verifyCode', {}, function (data) {
+            document.getElementById('verifyCode').innerHTML = data.returnData;
+        }, function (data) {
+            $.toastError(data.returnData);
+        });
+    }
+    //默认获取一次验证码
+    refreshVerifyCode();
+    
+    $(function() {
+        //刷新验证码
+        $('#verifyCode').on('click', function () {
+            refreshVerifyCode();
+        });
+
+        $('#sendEmailCode').on('click', function () {
+            //发送邮箱验证码
+            var userName = document.getElementById('userName').value;
+            //校验数据
+            var regNum = /^(\w)[0-9a-zA-Z_]{2,20}$/;
+            if ($.trim(userName).length == 0) {
+                $.toastError("请输入账号");
+                return;
+            }
+            if (regNum.test($.trim(userName)) == false) {
+                $.toastError("账号不符合规则");
+                return;
+            }
+            
+            $.apiPost('/user/sendEmailCode', {
+                userName: userName
+            }, function (data) {
+                $.toastSuccess(data.returnData);
+            }, function (data) {
+                $.toastError(data.returnData);
+            });
+            
+        });
+        
+        $('#submitButton').on('click', function() {
+            var _self = $(this);
+            var userName = document.getElementById('userName').value;
+            var userPassword = document.getElementById('userPassword').value;
+            var affirmPassword = document.getElementById('affirmPassword').value;
+            var emailVerifyCode = document.getElementById('emailVerifyCode').value;
+            var userVerifyCode = document.getElementById('userVerifyCode').value;
+            //校验数据
+            var regNum = /^(\w)[0-9a-zA-Z_]{2,20}$/;
+            var regPwd = /^(\w){2,20}$/;
+            if ($.trim(userName).length == 0) {
+                $.toastError("请输入账号");
+                return;
+            }
+            if (regNum.test($.trim(userName)) == false) {
+                $.toastError("账号不符合规则");
+                return;
+            }
+            if ($.trim(userPassword).length == 0) {
+                $.toastError("请输入密码");
+                return;
+            }
+            if (regPwd.test($.trim(userPassword)) == false) {
+                $.toastError("密码不符合规则");
+                return;
+            }
+            if (userPassword != affirmPassword) {
+                $.toastError("密码与确认密码不符");
+                return;
+            }
+            if ($.trim(emailVerifyCode).length == 0) {
+                $.toastError("请输入邮箱验证码");
+                return;
+            }
+            if ($.trim(userVerifyCode).length == 0) {
+                $.toastError("请输入验证码");
+                return;
+            }
+            
+            // 模拟异步数据请求
+            _self.prop('disabled', true);
+            //请求注册
+            $.apiPost('/user/resetPassword', {
+                userName: userName,
+                userPass: userPassword,
+                emailVerifyCode: emailVerifyCode,
+                validateCode : userVerifyCode
+            }, function (data) {
+                _self.prop('disabled', false);
+                $.toastSuccess("修改密码成功");
+                setTimeout(function () {
+                    location.href = '/login';
+                }, 1000);
+            }, function (data) {
+                _self.prop('disabled', false);
+                $.toastError(data.returnData);
+            });
+        })
+    });
+</script>
+</body>
+</html>

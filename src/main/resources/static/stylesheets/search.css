@@ -1,0 +1,150 @@
+@charset "utf-8";
+.ui-view {
+    background: #f2f2f2
+}
+
+.date-bar {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    padding: .8rem .75rem .4rem;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    background-color: #fff
+}
+
+.date-bar li {
+    text-align: center;
+    padding: 0 .25rem
+}
+
+.date-bar .date {
+    background-color: #f4f4f4;
+    line-height: 1.5rem;
+    padding: 0 .5rem;
+    border-radius: .75rem;
+    position: relative
+}
+
+.date-bar .date input {
+    border: 0;
+    height: 1.5rem;
+    line-height: 1.5rem;
+    width: 100%;
+    cursor: default;
+    font-size: .6rem;
+    background-color: transparent
+}
+
+.date-bar .date:after {
+    border: solid #979797;
+    content: "";
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    margin-top: -.2rem;
+    display: inline-block;
+    border-width: 1px 1px 0 0;
+    width: .3rem;
+    height: .3rem;
+    -webkit-transition-duration: 0;
+    transition-duration: 0;
+    -webkit-transform: rotate(135deg);
+    transform: rotate(135deg)
+}
+
+.date-bar .date-box {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1
+}
+
+.search-bar {
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    padding: .5rem .5rem .75rem;
+    border-bottom: 1px solid #e5e5e5;
+    background-color: #fff
+}
+
+.search-bar, .search-bar .select-member {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex
+}
+
+.search-bar .select-member {
+    padding-left: .4rem
+}
+
+.search-bar .select-member button {
+    border: 1px solid #4f7bee;
+    font-size: .7rem;
+    color: #4f7bee;
+    border-radius: .3rem;
+    padding: .25rem
+}
+
+.search-bar .select-member button:active {
+    background-color: #4f7bee;
+    color: #fff
+}
+
+.search-bar .select-member .btn-box {
+    width: 3.5rem;
+    max-width: 3.5rem;
+    min-width: 3.5rem
+}
+
+.search-bar .select-member .member-list {
+    padding-left: 1rem;
+    color: #666
+}
+
+.search-bar .select-member span {
+    padding-right: .25rem
+}
+
+.search-bar .btn-bar {
+    padding-right: .5rem;
+    max-width: 4rem;
+    min-width: 4rem;
+    width: 4rem;
+    text-align: right
+}
+
+.search-bar .btn-bar button {
+    background-color: #4f7bee;
+    color: #fff;
+    font-size: .7rem;
+    padding: .25rem 1rem;
+    border-radius: .3rem
+}
+
+.search-bar .btn-bar button:active {
+    opacity: .7
+}
+
+.data-list {
+    padding-top: .5rem;
+    background-color: #fff
+}
+
+.data-list table {
+    width: 100%
+}
+
+.data-list table th {
+    line-height: 2rem
+}
+
+.data-list table td, .data-list table th {
+    text-align: center;
+    border-bottom: 1px solid #eee
+}
+
+.data-list table td {
+    padding: .5rem 0
+}

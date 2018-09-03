@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.proxy.dao.ProxyListDaoMapper">
+    
+    <select id="getProxyParentListById" parameterType="int" resultType="com.proxy.entity.ProxyListEntity">
+        SELECT * FROM proxy_list_mapper WHERE mapper_proxy_id = #{proxyId}
+    </select>
+
+    <select id="getProxyParentListByName" resultType="com.proxy.entity.ProxyListEntity">
+        SELECT * FROM proxy_list_mapper WHERE mapper_proxy_name = #{proxyName}
+    </select>
+    
+    <insert id="insertProxyListMapper" parameterType="com.proxy.entity.ProxyListEntity">
+        INSERT INTO proxy_list_mapper (mapper_proxy_id,mapper_proxy_name,proxy_id,proxy_name,parent_proxy_id,parent_proxy_name,proxy_level,register_time,child_exist) 
+        VALUES (#{mapper_proxy_id},#{mapper_proxy_name},#{proxy_id},#{proxy_name},#{parent_proxy_id},#{parent_proxy_name},#{proxy_level},#{register_time},#{child_exist})
+    </insert>
+    
+    <update id="alterChildExist">
+        UPDATE  proxy_list_mapper SET child_exist = 1 WHERE proxy_id = #{proxy_id}
+    </update>
+    
+</mapper>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>群抢设置</title>
+    <meta name="viewport"
+          content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <script src="javascripts/require.js"></script>
+    <link href="stylesheets/settings.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+<div class="ui-view">
+
+    <header class="header">
+        <div class="left-btn icon-back" data-href="/home"></div>
+        <h1>群抢设置</h1>
+    </header>
+
+    <div class="ui-wrap">
+        <div class="ui-container">
+
+            <div class="settings">
+                <div class="line">
+                    <label class="ui-checkbox">
+                        <input id="pickAll" type="radio" name="radio1" value="checkbox" checked="checked"/> 开启所有群抢
+                        <span class="ui-checkbox-box"></span>
+                    </label>
+                </div>
+                <div class="line">
+                    <label class="ui-checkbox">
+                        <input id="pickSelect" type="radio" name="radio1" value="checkbox"/> 指定群抢
+                        <span class="ui-checkbox-box"></span>
+                    </label>
+                    <div class="tip">( 方法：在需要秒抢的群输入“开启”即可开启，若要关闭，群内输入“关闭”即可。 )</div>
+                </div>
+            </div>
+
+            <div class="settings">
+                <div class="title">个人秒抢设置</div>
+                <div class="line">
+                    <label class="ui-checkbox">
+                        <input id="autoPickPerson" type="checkbox" name="radio2" value="checkbox" checked="checked"/>
+                        自动抢个人私聊包
+                        <span class="ui-checkbox-box"></span>
+                    </label>
+                </div>
+                <div class="line">
+                    <label class="ui-checkbox">
+                        <input id="autoPickReceiver" type="checkbox" name="radio2" value="checkbox"/> 自动接收个人转账
+                        <span class="ui-checkbox-box"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="settings">
+                <div class="title">秒抢延时设置</div>
+                <div class="line">
+                    <label class="ui-checkbox">
+                        <input id="pickDelay" type="checkbox" value="checkbox" checked="checked"/>发出
+                        <input id="delayTime" type="text" class="ui-input input-01" value="10" checked="checked"/> 秒后，自动抢
+                        <span class="ui-checkbox-box"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="foot-bar-fiexd"></div>
+            <div class="foot-bar">
+                <p>
+                    <button id="save">保存</button>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript">
+
+    //获取url中的参数
+    function getUrlParam(name) {
+        var reg = new RegExp("(^|&amp;)" + name + "=([^&amp;]*)(&amp;|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r != null) return unescape(r[2]);
+        return null; //返回参数值
+    }
+
+    var initSetting = function (id) {
+        $.apiPost('/settings/init', {
+                id: id
+            },
+            function (data) {
+                var user = $.parseJSON(data.returnData);
+                if (user.pickType === 2) {
+                    $('#pickSelect').prop('checked', 'checked');
+                } else {
+                    $('#pickAll').prop('checked', 'checked');
+                }
+
+                $('#delayTime').val(user.pickDelayTime);
+
+
+                $('#autoPickPerson').prop('checked', user.autoPickPersonal === 1 ? 'checked' : false);
+                $('#autoPickReceiver').prop('checked', user.autoReceiveTransfer === 1 ? 'checked' : false);
+                $('#pickDelay').prop('checked', user.pickDelay === 1 ? 'checked' : false);
+
+            }, function (data) {
+                $.toastError(data.returnData);
+            })
+    };
+
+    $(function () {
+        var id = getUrlParam("id");
+        console.log(id);
+
+        initSetting(id);
+
+        $('#save').on('click', function () {
+
+            var pickType = $('#pickAll').is(':checked') ? 1 : 2;
+            var pickDelayTime = $('#delayTime').val();
+            var pickDelay = $('#pickDelay').is(':checked') ? 1 : 0;
+            var autoPickPersonal = $('#autoPickPerson').is(':checked') ? 1 : 0;
+            var autpReceiveTransafer = $('#autoPickReceiver').is(':checked') ? 1 : 0;
+
+            var info = {
+                id: id,
+                pickType: pickType,
+                pickDelay: pickDelay,
+                pickDelayTime: pickDelayTime,
+                autoPickPersonal: autoPickPersonal,
+                autoReceiveTransafer: autpReceiveTransafer
+            };
+
+            console.log(info);
+
+            $.apiPost('/settings/save', info,
+                function (data) {
+                    location.href = "/home";
+                }, function (data) {
+                    $.toastError(data.returnData);
+                })
+        });
+
+    });
+</script>
+
+</body>
+</html>

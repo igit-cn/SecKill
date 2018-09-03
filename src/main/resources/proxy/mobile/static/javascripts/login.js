@@ -1,0 +1,1 @@
+$(function(){$("#loginButton").on("click",function(){var n=$.trim($("#account").val()),o=$.trim($("#password").val());return n.length<=0?($.alert("账号不能为空。"),!1):o.length<=0?($.alert("密码不能为空。"),!1):($.showLoading(),void $.apiPost("proxyLogin",{account:n,password:md5(o)},function(n){$.setToken(n.data),location.href="index.html"}))})});

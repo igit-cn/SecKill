@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>注册</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <script>var _IS_AUTH_ = false</script>
+    <script src="static/javascripts/require.js"></script>
+    <link href="static/stylesheets/entrance.css" rel="stylesheet" type="text/css">
+    <script src="static/javascripts/register.js"></script>
+</head>
+
+<body>
+<div id="webView">
+   <header>
+      <div class="left-btn icon-back" data-href="login.html"></div>
+       <h1>注册</h1>
+   </header>
+
+    <ul class="form">
+       <li>
+           <div class="text">
+               <i class="icon icon-user"></i>
+               <input type="text" placeholder="请输入账号" id="account" />
+           </div>
+       </li>
+       <li>
+           <div class="text">
+               <i class="icon icon-pass"></i>
+               <input type="password" placeholder="请输入密码" id="password" />
+           </div>
+       </li>
+       <li>
+           <div class="text">
+               <i class="icon icon-pass"></i>
+               <input type="password" placeholder="请确认密码" id="repassword" />
+           </div>
+       </li>
+       <li>
+           <div class="text">
+               <i class="icon icon-invite"></i>
+               <input type="text" placeholder="请输入邀请人账号" id="previousProxyAccount" />
+           </div>
+       </li>
+       <li>
+           <div class="text">
+               <i class="icon icon-email"></i>
+               <input type="text" placeholder="请输入邮箱，用于找回密码" id="email" />
+           </div>
+       </li>
+       <li>
+           <button class="btn-submit" id="registerButton">注册</button>
+       </li>
+    </ul>
+</div>
+</body>
+</html>

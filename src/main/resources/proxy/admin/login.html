@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit">
+    <title>云秒 - 管理后台</title>
+	<meta content="云秒后台系统登录" name="description" />
+    <script>var _IS_AUTH_ = false</script>
+    <script src="static/base/javascripts/require.js"></script>
+    <script src="static/common/common.min.js"></script>
+    <link href="static/base/stylesheets/login-simple.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div id="webView">
+   <div class="login-wrap">
+        <div class="box">
+            <div class="title">
+                <h1>云秒 - 管理后台</h1>
+            </div>
+            <div class="login-form">
+                <div class="control">
+                    <i class="icon icon-user"></i>
+                    <input type="text" id="account" name="account" placeholder="请输入账号" />
+                </div>
+                <div class="control">
+                    <i class="icon icon-pass"></i>
+                    <input type="password" id="password" name="password" placeholder="请输入密码" />
+                </div>
+                <button type="submit" id="loginButton" class="login-btn">登录</button>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright &copy; 2016 云秒 Inc. All rights reserved.
+    </div>
+
+    <div class="left-bg"></div>
+    <div class="right-bg"></div>
+</div>
+<script type="text/javascript">
+$(function() {
+    $('.control input').focus(function() {
+        $(this).parent().addClass('control-focus');
+    }).blur(function() {
+        $(this).parent().removeClass('control-focus');
+    });
+
+    $(document).tooltip({
+        track: true
+    });
+    
+    $('#loginButton').click(function() {
+        var account = $.trim($('#account').val());
+        var password = $.trim($('#password').val());
+        if(account.length <= 0) {
+            $.sui.toast.error('请输入账号。');
+            $('#account').focus();
+            return false;
+        }
+        if(password.length <= 0) {
+            $.sui.toast.error('请输入密码。');
+            $('#password').focus();
+            return false;
+        }
+        $.apiPost('rootManagerLogin', {
+            account: account,
+            password: md5(password)
+        }, function(res) {
+            $.setToken(res.data);
+            location.href = './index.html';
+        })
+    });
+})
+</script>
+</body>
+</html>

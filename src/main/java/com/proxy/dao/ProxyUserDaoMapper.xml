@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.proxy.dao.ProxyUserDaoMapper">
+    
+    <select id="queryUserListByInfo" resultType="com.proxy.entity.UserEntity">
+        SELECT * FROM proxy_user
+        <where>
+            <if test="param3 != 0">
+                AND register_time > #{param3}
+            </if>
+            <if test="param4 != 0">
+                AND #{param4} > register_time
+            </if>
+            <if test="param5 != null">
+                AND user_name LIKE CONCAT('%',#{param5},'%')
+            </if>
+            <if test="param6 != null">
+                AND remark LIKE CONCAT('%',#{param6},'%')
+            </if>
+            <if test="param7 != -1">
+                AND status = #{param7} 
+            </if>
+        </where>
+        order by register_time desc limit ${param1 * param2}, #{param2}
+    </select>
+    
+    <select id="queryUserListCountByInfo" resultType="int">
+        SELECT count(1) FROM proxy_user
+        <where>
+            <if test="param1 != 0">
+                AND register_time > #{param1}
+            </if>
+            <if test="param2 != 0">
+                AND #{param2} > register_time
+            </if>
+            <if test="param3 != null">
+                AND #{param3} = user_name
+            </if>
+            <if test="param4 != null">
+                AND remark LIKE CONCAT('%',#{param4},'%')
+            </if>
+            <if test="param5 != -1">
+                AND #{param5} = status
+            </if>
+        </where>
+    </select>
+    
+    <insert id="createUserInfo" parameterType="com.proxy.entity.UserEntity">
+        INSERT INTO proxy_user (user_name, status, register_time) VALUES (#{user_name},#{status},#{register_time})
+    </insert>
+    
+    <update id="alterUserStatus">
+        UPDATE proxy_user SET status=#{param2} WHERE id IN
+        <foreach collection="param1" item="item" index="index"  open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+    
+    <select id="queryUserRegister" resultType="com.proxy.entity.UserEntity">
+        SELECT * FROM proxy_user WHERE user_name = #{param1} or email = #{param2}
+    </select>
+    
+    <insert id="userRegister">
+        INSERT INTO proxy_user (user_name,password,email,use_time,register_time) VALUES (#{param1},#{param2},#{param3},#{param4},#{param5})
+    </insert>
+
+    <select id="getUserInfoByUserName" resultType="com.proxy.entity.UserEntity">
+        SELECT * FROM  proxy_user WHERE user_name = #{param1}
+    </select>
+    
+    <update id="alterUserPassword">
+        UPDATE proxy_user SET password = #{param2} WHERE user_name = #{param1}
+    </update>
+    
+    <select id="userLogin" resultType="com.proxy.entity.UserEntity">
+        SELECT * FROM proxy_user WHERE user_name=#{param1} AND password = #{param2}
+    </select>
+    
+    <update id="addUserUseTime">
+        UPDATE proxy_user SET use_time = #{param1} WHERE user_name = #{param2}
+    </update>
+    
+</mapper>

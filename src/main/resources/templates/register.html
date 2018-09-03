@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>登录</title>
+    <meta name="viewport"
+          content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <script src="javascripts/require.js"></script>
+    <link href="stylesheets/register.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+<div class="ui-view">
+
+    <div class="form-wrap">
+        <div class="form">
+            <h1>注册</h1>
+            <div class="input-wrap sui-border-b">
+                <input id="userName" type="text" placeholder="请输入帐号"/>
+            </div>
+            <div class="input-wrap sui-border-b">
+                <input id="userPassword" type="password" placeholder="请输入密码"/>
+            </div>
+            <div class="input-wrap sui-border-b">
+                <input id="affirmPassword" type="password" placeholder="请再次输入密码"/>
+            </div>
+            <div class="input-wrap sui-border-b">
+                <input id="activeCode" type="text" placeholder="请输入激活码"/>
+            </div>
+            <div class="input-wrap sui-border-b">
+                <input id="email" type="text" placeholder="请输入邮箱，找回密码使用"/>
+            </div>
+            <div class="input-wrap sui-border-b">
+                <input id="userVerifyCode" type="text" placeholder="请输入验证码" class="verifycode-input"/>
+                <div class="verifycode sui-border-l">
+                    <div id="verifyCode" class="verifycode-text"></div>
+                </div>
+            </div>
+            <div class="button-wrap">
+                <button id="submitButton">确定注册</button>
+            </div>
+            <div class="link-wrap">
+                <div data-href="/index">已有账号登录&gt;</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript">
+    var refreshVerifyCode = function () {
+        $.apiPost('/user/verifyCode', {}, function (data) {
+            document.getElementById('verifyCode').innerHTML = data.returnData;
+        }, function (data) {
+            $.toastError(data.returnData);
+        });
+    }
+    //默认获取一次验证码
+    refreshVerifyCode();
+
+    $(function () {
+        //刷新验证码
+        $('#verifyCode').on('click', function () {
+            refreshVerifyCode();
+        });
+        //注册
+        $('#submitButton').on('click', function () {
+            var userName = document.getElementById('userName').value;
+            var userPassword = document.getElementById('userPassword').value;
+            var affirmPassword = document.getElementById('affirmPassword').value;
+            var activeCode = document.getElementById('activeCode').value;
+            var email = document.getElementById('email').value;
+            var userVerifyCode = document.getElementById('userVerifyCode').value;
+            //校验数据
+            var regNum = /^(\w)[0-9a-zA-Z_]{2,20}$/;
+            var regPwd = /^(\w){2,20}$/;
+            if ($.trim(userName).length == 0) {
+                $.toastError("请输入账号");
+                return;
+            }
+            if (regNum.test($.trim(userName)) == false) {
+                $.toastError("账号不符合规则");
+                return;
+            }
+            if ($.trim(userPassword).length == 0) {
+                $.toastError("请输入密码");
+                return;
+            }
+            if (regPwd.test($.trim(userPassword)) == false) {
+                $.toastError("密码不符合规则");
+                return;
+            }
+            if (userPassword != affirmPassword) {
+                $.toastError("密码与确认密码不符");
+                return;
+            }
+            if ($.trim(activeCode).length == 0) {
+                $.toastError("请输入激活码");
+                return;
+            }
+            if ($.trim(email).length == 0) {
+                $.toastError("请输入邮箱");
+                return;
+            }
+            if ($.trim(userVerifyCode).length == 0) {
+                $.toastError("请输入验证码");
+                return;
+            }
+            //请求注册
+            $.apiPost('/user/register', {
+                userName: userName,
+                userPass: userPassword,
+                userActiveCode: activeCode,
+                userEmail: email,
+                validateCode: userVerifyCode
+            }, function (data) {
+                $.toastSuccess("注册成功");
+                setTimeout(function () {
+                    location.href = '/login';
+                }, 1000);
+            }, function (data) {
+                $.toastError(data.returnData);
+            });
+        });
+    });
+</script>
+</body>
+</html>

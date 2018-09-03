@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<script src="static/base/javascripts/require.js"></script>
+    <script src="static/common/common.min.js"></script>
+	<link href="static/base/stylesheets/index.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="webView">
+	<div class="col-main">
+	    <div class="crumbs"><h2>用户列表</h2></div>
+	    <div class="main-content">
+	        <div class="search-bar">
+				<form action="users.html" method="get">
+		            <select name="field" id="field" class="select">
+		                <option value="userName">用户名</option>
+		                <option value="remark">备注</option>
+		            </select>
+		            <input type="text" name="keyword" id="keyword" class="input-w-120" placeholder="请输入关键字">
+		            注册时间
+		            <input type="text" name="beginTime" id="beginTime" readonly="readonly" onclick="WdatePicker({maxDate: '#F{$dp.$D(\'endTime\')}', minDate: '2010-01-01'})"
+		                   class="Wdate input-w-120" placeholder="开始日期"/>
+		            <span>-</span>
+		            <input type="text" name="endTime" id="endTime" readonly="readonly" onclick="WdatePicker({minDate: '#F{$dp.$D(\'beginTime\')||\'2010-01-01\'}'})"
+		                   class="Wdate input-w-120" placeholder="结束日期"/>
+		            <button type="submit" class="btn btn-primary" id="searchBtn"><i class="fa fa-search"></i> 搜索</button>
+		            <button type="button" class="btn btn-primary" id="resetBtn"> 重置</button>
+		         </form>
+	        </div>
+
+	        <div class="top-tools-bar">
+	            <div class="left list-info">
+	                <i class="fa fa-list"></i>
+	                <span id="pageInfo"></span>
+	            </div>
+	        </div>
+
+	        <table class="table table-hover table-bordered table-list">
+	            <thead>
+	            <tr>
+	                <th class="center"><input id="checkboxAll" type="checkbox" /></th>
+	                <th class="center">用户</th>
+	                <th class="center">状态</th>
+	                <th class="center">充值详情</th>
+	                <th class="center">注册时间</th>
+	                <th class="center">备注</th>
+	            </tr>
+	            </thead>
+	            <tbody id="dataList"></tbody>
+	        </table>
+	        
+	        <div id="pager" class="pager">
+				<div class="left-controls">
+				    <button type="button" id="recoverButton" class="btn btn-success">恢复</button>
+				    <button type="button" id="freezeButton" class="btn btn-success">冻结</button>
+				    <button type="button" id="deleteButton" class="btn btn-danger">删除</button>
+				</div>
+	        	<div id="pagger" class="pagger">
+	        	</div>
+	        </div>
+	    </div>
+	</div>
+</div>
+<script type="text/javascript">
+    $(function() {
+        $('#checkboxAll').iCheck('destroy');
+        //查询列表
+        getList();
+
+        // 重置查询
+        $('#resetBtn').click(function() {
+            location.href = $.url(location.href).attr('file');
+        });
+    });
+
+    // 分页获取数据
+    function getList() {
+
+        var condition = {
+            token: $.getToken()
+        }
+
+        var url = $.url(location.href);
+        var field = url.param('field');
+        var keyword = url.param('keyword');
+        var beginTime = url.param('beginTime');
+        var endTime = url.param('endTime');
+
+        if(!$.empty(field) && !$.empty(keyword)) {
+            condition[field] = decodeURI(keyword);
+            $('#field option[value="'+field+'"]').prop('selected', true);
+            $('#field').selectmenu('refresh');
+            $('#keyword').val(keyword);
+        }
+
+        if(!$.empty(beginTime) && !$.empty(endTime)) {
+            condition.beginTime = beginTime;
+            condition.endTime = endTime;
+            $('#beginTime').val(beginTime);
+            $('#endTime').val(endTime);
+        }
+
+        $('#pagger').pager({
+            url: 'queryUserListByInfo',
+            data: condition,
+            success: function(res) {
+                $('#pageInfo').text('共找到 ' + res.totalData + ' 条数据，页码：' + res.page + ' / '+ res.totalPage);
+                if(res.list.length <= 0) {
+                    $('#dataList').html('<tr><td colspan="100" class="not-data"><i class="fa fa-warning"></i> 暂无信息~！</td></tr>');
+                } else {
+                    showList(res.list);
+                }
+            }
+        });
+    }
+
+    // 填充数据
+    var _batchMgr;
+    function showList(list) {
+        // 状态码
+        var statusCode = [
+            {text: '启用', color: 'text-success'},
+            {text: '冻结', color: 'text-error'},
+            {text: '删除', color: 'muted'}
+        ];
+        $('#dataList').html('');
+        for(var i = 0; i < list.length; ++i) {
+            var data = list[i];
+            var statusText = statusCode[data.status].text;
+            var statusColor = statusCode[data.status].color;
+            var strHtml = '' +
+                '<tr>' +
+                    '<td class="center"><input type="checkbox" class="checkboxIds" value="' + data.id + '" /></td>' +
+	                '<td class="center">'+data.user_name+'</td>' +
+	                '<td class="center '+statusColor+'">'+statusText+'</td>' +
+	                '<td class="center"><a href="recharge.html?field=rechargeUserName&keyword='+encodeURI(data.user_name)+'"  onclick="top.redirectMenu(1)">查看详情</a></td>' +
+	                '<td class="center">'+$.dateTimeFormat(data.register_time)+'</td>' +
+	                '<td class="center">'+data.remark+'</td>' +
+	            '</tr>';
+            $('#dataList').append(strHtml);
+        }
+        // 绑定批量id对象
+        _batchMgr = $.batchManagement();
+    }
+    
+    // 批量操作
+    $(function() {
+        var setStatus = function(status) {
+            if(!_batchMgr) {
+                $.sui.error('没有任何数据可供选择。');
+                return;
+            }
+            if(_batchMgr.values.length <= 0) {
+                $.sui.error('请选择最少一条可操作的数据。');
+                return;
+            }
+            $.sui.confirm('是否确定执行此操作？', function() {
+                $.apiPost('resetUserStatus', {
+                    status: status,
+                    'userIds[]': _batchMgr.values,
+                    token: $.getToken()
+                }, function(res) {
+                    getList();
+                    $('#checkboxAll').prop('checked', false);
+                    $.sui.toast.success(res.msg);
+                });
+            });
+        }
+        
+        // 恢复
+        $('#recoverButton').on('click', function() {
+            setStatus(0);
+        });
+        
+        // 冻结
+        $('#freezeButton').on('click', function() {
+            setStatus(1);
+        });
+        
+        //删除
+        $('#deleteButton').on('click', function() {
+            setStatus(2);
+        });
+        
+    })
+</script>
+</body>
+</html>

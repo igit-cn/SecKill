@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>充值码</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <script src="static/javascripts/require.js"></script>
+    <link href="static/stylesheets/datePicker.css" rel="stylesheet" type="text/css">
+    <link href="static/stylesheets/sold.css" rel="stylesheet" type="text/css">
+    <script src="static/javascripts/datePicker.js"></script>
+    <script src="static/javascripts/sold.js"></script>
+</head>
+
+<body>
+<div id="webView">
+   <header>
+       <div class="left-btn icon-back" data-href="index.html"></div>
+       <h1>充值码</h1>
+       <div id="showFilterButton" class="right-btn icon-filter">筛选</div>
+   </header>
+   <ul class="tab sui-border-b">
+      <li class="active" data-fromtype="0"><span>已出售</span></li> 
+      <li data-fromtype="1"><span>已转让</span></li> 
+   </ul>
+   
+   <div class="table-view">
+       <table>
+           <thead id="list-hd" style="display:none">
+               <tr>
+                   <th></th>
+                   <th width="20%">卡密</th>
+                   <th>充值码类型</th>
+                   <th>状态</th>
+                   <th></th>
+               </tr>
+           </thead>
+           <tbody id="list"></tbody>
+       </table>
+       <div id="loadWrap"></div>
+   </div>
+   <div class="foot-hold"></div>
+   <div class="foot-bar sui-border-t">
+      <div class="wrap">
+           <label for="checkboxAll">
+               <input type="checkbox" id="checkboxAll" class="checkbox" />
+           </label>
+           <button data-status="0" class="batch-btn">恢复</button>
+           <button data-status="1" class="batch-btn">冻结</button>
+           <button data-status="2" class="batch-btn red-btn">删除</button>
+      </div>
+   </div>
+   
+   <!--搜索表单-->
+   <div id="filterPopup" class="sui-popup-container">
+        <div class="sui-popup-mask"></div>
+        <div class="sui-popup-modal">
+            <header>
+               <div id="hidePopup" class="left-btn icon-back"></div>
+               <h1>筛选</h1>
+           </header>
+           <div class="popup-form">
+               <dl>
+                   <dt>
+                       <div class="select sui-border">
+                           <select id="timeType">
+                               <option value="buy">购买时间</option>
+                               <option value="sell">出售时间</option>
+                               <option value="recharge">充值时间</option>
+                           </select>
+                       </div>
+                   </dt>
+                   <dd>
+                       <div class="sui-border input-date">
+                           <input type="text" placeholder="开始时间" id="beginTime" readonly />
+                       </div>
+                       <div class="sui-border input-date">
+                           <input type="text" placeholder="结束时间" id="endTime" readonly />
+                       </div>
+                   </dd>
+               </dl>
+               <dl>
+                   <dt>
+                       <div class="select sui-border">
+                           <select id="field">
+                               <option value="rechargeCode">充值码</option>
+                               <option value="childProxyName">代理</option>
+                               <option value="remark">备注</option>
+                           </select>
+                       </div>
+                   </dt>
+                   <dd>
+                       <div class="sui-border input">
+                           <input id="keyword" type="text" placeholder="搜索条件" />
+                       </div>
+                   </dd>
+               </dl>
+               <dl>
+                   <dt>
+                       <label>充值码类型</label>
+                   </dt>
+                   <dd>
+                       <div class="select sui-border">
+                           <select id="rechargeType"></select>
+                       </div>
+                   </dd>
+               </dl>
+               <dl>
+                   <dt>
+                       <label>操作状态</label>
+                   </dt>
+                   <dd>
+                       <div class="select sui-border">
+                           <select id="status">
+                               <option value="">全部</option>
+                               <option value="0">正常</option>
+                               <option value="1">冻结</option>
+                               <option value="2">删除</option>
+                           </select>
+                       </div>
+                   </dd>
+               </dl>
+               <dl>
+                   <dt>
+                       <label>出售状态</label>
+                   </dt>
+                   <dd>
+                       <div class="select sui-border">
+                           <select id="sellStatus">
+                               <option value="">全部</option>
+                               <option value="0">未出售</option>
+                               <option value="1">已出售</option>
+                           </select>
+                       </div>
+                   </dd>
+               </dl>
+               <dl>
+                   <dt>
+                       <label>充值状态</label>
+                   </dt>
+                   <dd>
+                       <div class="select sui-border">
+                           <select id="rechargeStatus">
+                               <option value="">全部</option>
+                               <option value="0">未充值</option>
+                               <option value="1">已充值</option>
+                           </select>
+                       </div>
+                   </dd>
+               </dl>
+           </div>
+           <div class="btn-bar">
+               <div class="wrap">
+                   <button id="searchButton" type="button">搜索</button>
+               </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+<script id="itemTpl" type="text/x-dot-template">
+<tr>
+   <td><input type="checkbox" class="checkbox checkboxIds" value="{{=it.id}}" /></td>
+   <td>{{=it.recharge_code}}</td>
+   <td>{{=it.tips}}</td>
+   <td class="{{=it.statusColor}}">{{=it.statusText}}</td>
+   <td><button class="detail-btn">查看详情<div style="display:none">{{=JSON.stringify(it)}}</div></button></td>
+</tr>
+</script>
+<script id="detailTpl" type="text/x-dot-template">
+<div class="detail">
+   <div class="attribute">
+       <span>卡密</span>
+       {{=it.recharge_code}}
+   </div>
+   <div class="attribute">
+       <span>充值码类型</span>
+       {{=it.tips}}
+   </div>
+   <div class="attribute">
+       <span>状态</span>
+       <i id="status{{=it.id}}" class="status {{=it.statusColor}}">{{=it.statusText}}</i>
+   </div>
+   <div class="attribute">
+       <span>归属</span>
+       {{=it.from_proxy_name}}
+   </div>
+   <div class="attribute">
+       <span>{{=it.create_time_label}}</span>
+       {{=it.create_time}}
+   </div>
+   {{?it.fromtype == 0}}
+   <div class="attribute">
+       <span>出售时间</span>
+       {{=it.sell_time}}
+   </div>
+   <div class="attribute">
+       <span>充值账号</span>
+       {{=it.recharge_account}}
+   </div>
+   <div class="attribute">
+       <span>充值时间</span>
+       {{=it.recharge_time}}
+   </div>
+   {{?}}
+   <div class="attribute">
+       <span>备注</span>
+       {{=it.remark}}
+   </div>
+</div>
+</script>
+</body>
+</html>

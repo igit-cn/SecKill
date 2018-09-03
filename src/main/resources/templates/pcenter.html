@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>个人中心</title>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <meta name="context-path" content="/"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <meta name="full-screen" content="yes"/>
+    <meta name="x5-fullscreen" content="true"/>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <script src="javascripts/require.js"/>
+    <link href="stylesheets/panel.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+<div class="ui-view">
+    <header class="header">
+        <h1>个人中心</h1>
+        <div class="right-btn" data-href="#">建议反馈</div>
+    </header>
+
+    <div class="panel-wrap">
+
+        <div class="userinfo-b">
+            <div class="left-bar">
+                <div id="userName" class="account-no">用户账号</div>
+                <button>修改密码</button>
+                <button id="logout">退出</button>
+            </div>
+            <div class="right-bar">
+                <div id="userCoinCount" class="count">剩余点数</div>
+                <button id="rechargeButton">充值</button>
+            </div>
+        </div>
+
+        <div class="line"/>
+
+        <div class="userinfo-a">
+            <div class="avatar"><img id="avatar" src="images/avatar.png" /></div>
+            <div class="button-wrap">
+                <button id="getQR">点击扫码登录</button>
+                <div class="wechatName"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="list">
+        <ul>
+            <li>
+                <div class="item"  data-href="#">
+                    <div class="icon icon-09"></div>
+                    <span>云秒</span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!--二维码显示-->
+<div class="qrcode-wrap">
+    <div class="qroce-box">
+        <img id="QRCode"/>
+        <span class="close"></span>
+    </div>
+</div>
+<div class="sui-mask qrcode-mask"></div>
+
+<script type="text/javascript">
+
+    var key_login_info = "";
+    var isLoadQRCode = false;
+    var get_time = 0;
+    var sseSource;
+
+    // 获取用户信息
+    var queryHomeUserInfo = function (){
+        $.apiPost('/user/userInfo', {
+        }, function (data) {
+            var homeBean = $.parseJSON(data.returnData);
+            document.getElementById('userName').innerHTML = "用户账号：" + homeBean.userInfo.userName;
+            document.getElementById('userCoinCount').innerHTML = "剩余点数：" + homeBean.userInfo.coin_count + "点";
+            
+            var wcUserInfoCacheInfo = homeBean.wcUserInfoCacheInfo;
+            if(wcUserInfoCacheInfo != null) {
+                $("#avatar").attr("src", wcUserInfoCacheInfo.wc_head_url);
+                $(".wechatName").html(wcUserInfoCacheInfo.wc_user_name);
+                $('#getQR').html('退出登录');
+            }
+            
+        }, function (data) {
+            $.toastError(data.returnData);
+        });
+    };
+    // 充值
+    var recharge = function (rechargeCode){
+        $.apiPost('/user/rechargeCodeUp',{
+            rechargeCode : rechargeCode
+        }, function (data) {
+            document.getElementById('userCoinCount').innerHTML = "剩余点数：" + data.returnData + "点";
+            $.toastSuccess("充值成功");
+        }, function (data) {
+            $.toastError(data.returnData);
+        });
+    }
+    //显示二维码
+    function showQR(content) {
+        $('.qrcode-wrap').show();
+        $('.sui-mask').show();
+        $('#QRCode').attr("src","user/createQRCodeImage?content=" + content);
+    }
+    // 隐藏二维码
+    $('.qrcode-wrap .close, .qrcode-mask').on('click', function() {
+        $('.qrcode-wrap').hide();
+        $('.sui-mask').hide();
+    });
+    // 显示扫码登录后的信息
+    function showLoginInfo(data){
+        $('#getQR').html('退出登录');
+        $('.qrcode-wrap').hide();
+        $('.sui-mask').hide();
+        
+        var login_info_obj = JSON.parse(data);
+        $("#avatar").attr("src", login_info_obj.HeaderImageUrl);
+        $(".wechatName").html(login_info_obj.WxNickName);
+        
+        localStorage.setItem(key_login_info, data);
+    };
+    //判断是否是json
+    function isJsonFormat(str) {
+        try {
+            $.parseJSON(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
+    //发送获取二维码的通知
+    function sendSSE() {
+        console.log("发起获取二维码请求");
+        if ( ! window.EventSource) {
+            $.toastError("浏览器不支持SSE")
+        }
+
+        if(sseSource != null){
+            sseSource.close();
+        }
+        
+        sseSource = new EventSource('/wechat/getQRCode');
+        sseSource.addEventListener('message', function (e) {
+            var data = e.data;
+            if (data.indexOf("http") == 0) {//是链接,生成二维码
+                showQR(data);
+                isLoadQRCode = true;
+                $.hideLoading();
+            } else if (isJsonFormat(data)){//是登录信息
+                localStorage.setItem(key_login_info, data);
+                showLoginInfo(data);
+            } else {//服务器抛出异常
+                console.log("异常报错!!");
+            }
+        });
+        //发生错误消息
+        sseSource.addEventListener('error', function (e) {
+            if (e.readyState == EventSource.CLOSED) {
+                console.log("链接关闭");
+            } else {
+                console.log(e.readyState);
+            }
+            sseSource.close();
+        }, false);
+        //wc退出
+        sseSource.addEventListener('wc_quite', function (e) {
+            console.log("收到退出信息：" + e.data);
+            localStorage.removeItem(key_login_info);
+            sseSource.close();
+        }, false);
+    }
+
+    $(function () {
+        //获取二维码地址，生成二维码展示
+        $("#getQR").on('click',  function () {
+            
+            //退出登录部分
+            if($('#getQR').html() == '退出登录'){//.清空用户数据
+                $.apiPost('/wechat/logout', {
+                }, function (data) {
+                    $('#getQR').html('点击扫码登录');
+                    $('.wechatName').html('');
+                    $('#avatar').attr('src','images/avatar.png');
+                }, function (data) {
+                    $.toastError(data.returnData);
+                });
+                return ;
+            }
+            
+            $.showLoading("二维码生成中");
+            isLoadQRCode = false;
+            get_time = 0;
+            sendSSE();
+            var interval = self.setInterval(function () {
+                get_time ++;
+                if (get_time > 5) {
+                    $.toastError("获取失败，请稍后重试");
+                    window.clearInterval(interval);
+                    sseSource.close();
+                }
+                if (isLoadQRCode) {
+                    console.log("取到二维码");
+                    window.clearInterval(interval);
+                } else {
+                    console.log("未获取到二维码");
+                    sseSource.close();
+                    sendSSE();
+                }
+            }, 5000);
+        });
+        // 充值提示
+        $('#rechargeButton').on('click', function () {
+            $.dialog({
+                title: '充值',
+                text: '请输入充值码',
+                html: '<div class="sui-dialog-input"><input type="text" placeholder="充值码" /></div>',
+                autoClose: false,
+                buttons: [{
+                    text: '取消',
+                    onClick : function () {
+                        $.closeDialog();
+                    }
+                }, {
+                    text: '确定',
+                    onClick : function (rechargeCode) {
+                        // 判断充值码是否为空
+                        if(rechargeCode == ''){
+                            return ;
+                        }
+                        $.closeDialog();
+                        recharge(rechargeCode);
+                    }
+                }]
+            });
+        });
+        //退出登录
+        $('#logout').on('click', function () {
+            $.apiPost('/user/logout', {
+            }, function (data) {
+                location.href = '/index';
+            }, function (data) {
+                $.toastError(data.returnData);
+            });
+        });
+    });
+    //默认获取一次用户信息
+    queryHomeUserInfo();
+</script>
+</body>
+</html>
+

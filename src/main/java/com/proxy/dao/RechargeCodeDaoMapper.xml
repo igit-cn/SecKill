@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.proxy.dao.RechargeCodeDaoMapper">
+    
+    <select id="queryRechargeCodeCount" resultType="long">
+        SELECT count(1) FROM recharge_code
+        <where>
+            <if test="param1 != 0">
+                AND create_time > #{param1}
+            </if>
+            <if test="param2 != 0">
+                AND #{param2} > create_time
+            </if>
+            <if test="param3 != -1">
+                AND status = #{param3}
+            </if>
+            <if test="param4 != 0">
+                AND recharge_time > #{param4}
+            </if>
+            <if test="param5 != 0">
+                AND #{param5} > recharge_time
+            </if>
+            <if test="param6 != null">
+                AND recharge_code LIKE CONCAT('%',#{param6},'%')
+            </if>
+            <if test="param7 != null">
+                AND recharge_account = #{param7}
+            </if>
+            <if test="param8 != null">
+                AND from_proxy_name = #{param8}
+            </if>
+            <if test="param9 != null">
+                AND remark LIKE CONCAT('%',#{param9},'%')
+            </if>
+            <if test="param10 != null">
+                AND recharge_type = #{param10}
+            </if>
+            <if test="param11 != null">
+                AND sell_status = #{param11}
+            </if>
+            <if test="param12 != null">
+                AND recharge_status = #{param12}
+            </if>
+            <if test="param13 != 0">
+                AND sell_time > #{param13}
+            </if>
+            <if test="param14 != 0">
+                AND #{param14} > sell_time
+            </if>
+        </where>
+        order by recharge_time desc
+    </select>
+    
+    <select id="queryRechargeCodeList" resultType="com.proxy.entity.RechargeCodeEntity">
+        SELECT * FROM recharge_code
+        <where>
+            <if test="param3 != 0 and param3 != -1">
+                AND create_time > #{param3}
+            </if>
+            <if test="param4 != 0 and param4 != -1">
+                AND #{param4} > create_time
+            </if>
+            <if test="param5 != -1">
+                AND status = #{param5}
+            </if>
+            <if test="param6 != 0 and param6 != -1">
+                AND recharge_time > #{param6}
+            </if>
+            <if test="param7 != 0 and param7 != -1">
+                AND #{param7} > recharge_time
+            </if>
+            <if test="param8 != null">
+                AND recharge_code LIKE CONCAT('%',#{param8},'%')
+            </if>
+            <if test="param9 != null">
+                AND recharge_account = #{param9}
+            </if>
+            <if test="param10 != null">
+                AND from_proxy_name = #{param10}
+            </if>
+            <if test="param11 != null">
+                AND remark LIKE CONCAT('%',#{param11},'%')
+            </if>
+            <if test="param12 != null">
+                AND recharge_type = #{param12}
+            </if>
+            <if test="param13 != null">
+                AND sell_status = #{param13}
+            </if>
+            <if test="param14 != null">
+                AND recharge_status = #{param14}
+            </if>
+            <if test="param15 != 0 and param15 != -1">
+                AND sell_time > #{param15}
+            </if>
+            <if test="param16 != 0 and param16 != -1">
+                AND #{param16} > sell_time
+            </if>
+        </where>
+        order by create_time desc limit ${param1 * param2}, #{param2}
+    </select>
+    
+    <select id="queryRechargeCodeById"  resultType="com.proxy.entity.RechargeCodeEntity">
+        SELECT * FROM recharge_code WHERE id = #{param1}
+    </select>
+    
+    <update id="resetRechargeStatus">
+        UPDATE recharge_code SET status=#{param1},status_edit_level=#{param3},status_edit_id=#{param4},status_edit_name=#{param5} WHERE id IN 
+        <foreach collection="param2" item="item" index="index"  open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </update>
+    
+    <update id="rechargeToUser">
+        UPDATE recharge_code SET recharge_status = 1, recharge_time = #{param2}, recharge_account = #{param3} WHERE recharge_code = #{param1} 
+    </update>
+
+</mapper>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+	<meta name="renderer" content="webkit"> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>充值码详情</title>
+	<script src="static/base/javascripts/require.js"></script>
+    <script src="static/common/common.min.js"></script>
+	<link href="static/base/stylesheets/index.css" rel="stylesheet" type="text/css">
+	<style type="text/css">
+        body{margin:0;padding:0;background-color:white;width:999px;height:200px;}
+        .steps{position:relative;height:100px;margin-top:50px;}
+        .steps .line-all{position:absolute;height:2px;background-color:#bfcbd9;top:16px;z-index:1;left:20px}
+        .steps .step{width:200px;float:left;position:relative;}
+        .steps .time{position:absolute;top:-8px;left:-120px}
+        .steps .circle{width:32px;height:32px;line-height:32px;text-align:center;font-size:16px;background-color:#bfcbd9;color:#fff;border-radius:50%;position:relative;z-index:3;left:20px}
+        .steps .remark {position:relative;left:10px}
+        .steps .remark h3{font-size:14px;color:#00a0e9;font-weight:normal;padding:10px 0 0;margin:0;line-height:20px}
+        .steps .remark p{margin:0;padding:5px 0 0 8px;color:#8391a5;}
+        #webView{width:999px;height:200px;overflow:hidden;overflow-x:auto;}
+    </style>
+</head>
+<body>
+<div id="webView">	        
+    <div class="steps">
+       <div class="line-all"></div>
+   </div>
+</div>
+<script type="text/javascript">
+    $(function() {
+        $('#webView').css('visibility', 'hidden');
+        var url = $.url(location.href);
+        var proxyId = url.param('proxyId');
+        if($.empty(proxyId) || isNaN(proxyId)) {
+            $.sui.error('缺少参数或参数不合法。', function() {
+                location.href = 'recharge.html';
+                return;
+            });
+        }
+        
+        $.apiGet('queryProxyParentList', {proxyId: proxyId}, function(res) {
+            var width = res.data.length * 200;
+            $('.steps').css('width', width + 'px');
+            $('.line-all').css('width', (width - 200) + 'px');
+            
+            var strHtml = '';
+            for(var i = 0; i < res.data.length; ++i) {
+                var data = res.data[i];
+                var title = data.proxy_level > 0 ? data.proxy_level + '级代理' : '云秒后台';
+                if(data.proxy_level > 0 && i >= res.data.length - 1) title = '用户';
+                strHtml += '<div class="step">' +
+                   '<div class="circle">'+data.proxy_level+'</div>' +
+                   '<div class="time">'+$.dateTimeFormat(data.register_time)+'</div>' +
+                   '<div class="remark">' +
+                       '<h3>'+title+'</h3>' +
+                       '<p>'+data.proxy_name+'</p>' +
+                   '</div>' +
+               '</div>';
+            }
+            $('.steps').append(strHtml);
+
+            $('#webView').css('visibility', 'visible');
+        });
+    });
+</script>
+</body>
+</html>

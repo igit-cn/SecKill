@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<script src="static/base/javascripts/require.js"></script>
+    <script src="static/common/common.min.js"></script>
+	<link href="static/base/stylesheets/index.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="webView">
+	<div class="col-main">
+	    <div class="crumbs"><h2>充值码列表</h2></div>
+	    <div class="main-content">
+	        <div class="search-bar">
+				<form action="recharge.html" method="get">
+		            <select name="field" id="field" class="select">
+		                <option value="rechargeCode">充值码</option>
+		                <option value="rechargeUserName">充值账号</option>
+		                <option value="fromProxyName">所属代理</option>
+		                <option value="remark">备注</option>
+		            </select>
+		            <input type="text" name="keyword" id="keyword" class="input-w-120" placeholder="请输入关键字">
+		            <select name="rechargeCodeType" id="rechargeCodeType" class="select" style="width: 105px"></select>
+		            <select name="status" id="status" class="select">
+		                <option value="-1">状态(全部)</option>
+		                <option value="1">已充值</option>
+		                <option value="2">已出售</option>
+		                <option value="3">已冻结</option>
+		                <option value="4">已删除</option>
+		            </select>
+		           	<select name="timeType" id="timeType" class="select">
+		                <option value="1">出卡时间</option>
+		                <option value="2">充值时间</option>
+		            </select>
+		            <input type="text" name="beginTime" id="beginTime" readonly="readonly" onclick="WdatePicker({maxDate: '#F{$dp.$D(\'endTime\')}', minDate: '2010-01-01'})"
+		                   class="Wdate input-w-120" placeholder="开始日期"/>
+		            <span>-</span>
+		            <input type="text" name="endTime" id="endTime" readonly="readonly" onclick="WdatePicker({minDate: '#F{$dp.$D(\'beginTime\')||\'2010-01-01\'}'})"
+		                   class="Wdate input-w-120" placeholder="结束日期"/>
+		            <button type="submit" class="btn btn-primary" id="searchBtn"><i class="fa fa-search"></i> 搜索</button>
+		            <button type="button" class="btn btn-primary" id="resetBtn"> 重置</button>
+		         </form>
+	        </div>
+
+	        <div class="top-tools-bar">
+	            <div class="left list-info">
+	                <i class="fa fa-list"></i>
+	                <span id="pageInfo"></span>
+	            </div>
+	        </div>
+
+	        <table class="table table-hover table-bordered table-list">
+	            <thead>
+	            <tr>
+	                <th class="center"><input id="checkboxAll" type="checkbox" /></th>
+	                <th class="center">充值码</th>
+	                <th class="center">状态</th>
+	                <th class="center">类型</th>
+	                <th class="center">充值账号</th>
+	                <th class="center">所属代理</th>
+	                <th class="center">出卡时间</th>
+	                <th class="center">充值时间</th>
+	                <th class="center">详情</th>
+	                <th class="center">备注</th>
+	            </tr>
+	            </thead>
+	            <tbody id="dataList"></tbody>
+	        </table>
+	        
+	        <div id="pager" class="pager">
+				<div class="left-controls">
+				    <button type="button" id="recoverButton" class="btn btn-success">恢复</button>
+				    <button type="button" id="freezeButton" class="btn btn-success">冻结</button>
+				    <button type="button" id="deleteButton" class="btn btn-danger">删除</button>
+				</div>
+	        	<div id="pagger" class="pagger">
+	        	</div>
+	        </div>
+	    </div>
+	</div>
+</div>
+<script type="text/javascript">
+    $(function() {
+        
+        $('#checkboxAll').iCheck('destroy');
+        
+        $.apiGet('getRechargeCodeTypeList', function(res) {
+            var html ='<option value="">充值码(全部)</option>';
+            for(var i = 0; i < res.data.length; ++i) {
+                var data = res.data[i].tips;
+                html += '<option value="'+res.data[i].type+'">'+data+'</option>';
+            }
+            $('#rechargeCodeType').html(html).selectmenu('refresh');
+            //查询列表
+            getList();
+        });
+        
+        // 重置查询
+        $('#resetBtn').click(function() {
+            location.href = $.url(location.href).attr('file');
+        });
+    });
+
+    // 分页获取数据
+    function getList() {
+
+        var condition = {
+            token: $.getToken()
+        }
+
+        var url = $.url(location.href);
+        var field = url.param('field');
+        var keyword = url.param('keyword');
+        var timeType = url.param('timeType');
+        var rechargeCodeType = url.param('rechargeCodeType');
+        var status = url.param('status');
+        var beginTime = url.param('beginTime');
+        var endTime = url.param('endTime');
+
+        if(!$.empty(field) && !$.empty(keyword)) {
+            condition[field] = decodeURI(keyword);
+            $('#field option[value="'+field+'"]').prop('selected', true);
+            $('#field').selectmenu('refresh');
+            $('#keyword').val(keyword);
+        }
+        
+        if(!$.empty(rechargeCodeType) && !$.empty(rechargeCodeType)) {
+            condition.rechargeCodeType = rechargeCodeType;
+            $('#rechargeCodeType option[value="'+rechargeCodeType+'"]').prop('selected', true);
+            $('#rechargeCodeType').selectmenu('refresh');
+        }
+        
+        if(!$.empty(status) && !$.empty(status)) {
+            condition.status = status;
+            $('#status option[value="'+status+'"]').prop('selected', true);
+            $('#status').selectmenu('refresh');
+        }
+
+        if(!$.empty(beginTime) && !$.empty(endTime)) {
+            if(timeType == 1) {
+                condition.beginTime = beginTime;
+                condition.endTime = endTime;
+            } else {
+                condition.rechargeBeginTime = beginTime;
+                condition.rechargeEndTime = endTime;
+            }
+            $('#beginTime').val(beginTime);
+            $('#endTime').val(endTime);
+        }
+
+        $('#pagger').pager({
+            url: 'queryRechargeCodeList',
+            data: condition,
+            success: function(res) {
+                $('#pageInfo').text('共找到 ' + res.totalData + ' 条数据，页码：' + res.page + ' / '+ res.totalPage);
+                if(res.list.length <= 0) {
+                    $('#dataList').html('<tr><td colspan="100" class="not-data"><i class="fa fa-warning"></i> 暂无信息~！</td></tr>');
+                } else {
+                    showList(res.list);
+                }
+            }
+        });
+    }
+
+    // 填充数据
+    var _batchMgr;
+    function showList(list) {
+        // 状态码
+        var statusCode = [
+            {text: '未出售', color: 'text-info'},
+            {text: '已冻结', color: 'text-error'},
+            {text: '已删除', color: 'muted'},
+            {text: '已出售', color: 'text-success'},
+            {text: '已充值', color: 'text-success'},
+        ];
+        $('#dataList').html('');
+        for(var i = 0; i < list.length; ++i) {
+            var data = list[i];
+            var statusText = statusCode[data.showStatus].text;
+            var statusColor = statusCode[data.showStatus].color;
+            var strHtml = '' +
+                '<tr>' +
+                    '<td class="center"><input type="checkbox" class="checkboxIds" value="' + data.id + '" /></td>' +
+	                '<td class="center">'+data.recharge_code+'</td>' +
+	                '<td class="center '+statusColor+'">'+statusText+'</td>' +
+	                '<td class="center">'+data.recharge_type_tips+'</td>' +
+	                '<td class="center">'+data.recharge_account+'</td>' +
+	                '<td class="center">'+data.from_proxy_name+'</td>' +
+	                '<td class="center">'+$.dateTimeFormat(data.create_time)+'</td>' +
+	                '<td class="center">'+$.dateTimeFormat(data.recharge_time)+'</td>' +
+	                '<td class="center"><a class="detailButton" href="javascript:;" data-url="recharge_detail.html?proxyId='+data.from_proxy_id+'">查看详情</a></td>' +
+	                '<td class="center">'+data.remark+'</td>';
+	            '</tr>';
+            $('#dataList').append(strHtml);
+        }
+        // 绑定批量id对象
+        _batchMgr = $.batchManagement();
+        $('.detailButton').off('click').on('click', function() {
+            var url = $(this).data('url');
+            $.sui.dialog.open(url);
+        })
+    }
+    
+    // 批量操作
+    $(function() {
+        var setStatus = function(status) {
+            if(!_batchMgr) {
+                $.sui.error('没有任何数据可供选择。');
+                return;
+            }
+            if(_batchMgr.values.length <= 0) {
+                $.sui.error('请选择最少一条可操作的数据。');
+                return;
+            }
+            $.sui.confirm('是否确定执行此操作？', function() {
+                $.apiPost('resetRechargeStatus', {
+                    status: status,
+                    'rechargeIds[]': _batchMgr.values,
+                    token: $.getToken()
+                }, function(res) {
+                    getList();
+                    $('#checkboxAll').prop('checked', false);
+                    $.sui.toast.success(res.msg);
+                });
+            });
+        }
+        
+        // 恢复
+        $('#recoverButton').on('click', function() {
+            setStatus(0);
+        });
+        
+        // 冻结
+        $('#freezeButton').on('click', function() {
+            setStatus(5);
+        });
+        
+        //删除
+        $('#deleteButton').on('click', function() {
+            setStatus(6);
+        });
+        
+    })
+</script>
+</body>
+</html>

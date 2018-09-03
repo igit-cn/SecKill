@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.proxy.dao.BusinessDaoMapper">
+
+    <!--修改-->
+    <insert id="pushRechargeCard" parameterType="com.proxy.entity.RechargeCodeEntity">
+        INSERT INTO recharge_code (recharge_code,status,from_proxy_name,from_proxy_id,create_time,recharge_type,remark) VALUES (#{recharge_code},#{status},#{from_proxy_name},#{from_proxy_id},#{create_time},#{recharge_type},#{remark})
+    </insert>
+
+    <update id="addRemark">
+        UPDATE proxy_list_mapper SET remark = #{param3} WHERE parent_proxy_id = #{param1} AND mapper_proxy_name = #{param2}
+    </update>
+
+    <select id="queryProxyListByPreviousProxyName" resultType="com.proxy.entity.ProxyListEntity">
+        SELECT * FROM proxy_list_mapper WHERE parent_proxy_name = #{param1} AND mapper_proxy_name = proxy_name limit ${param2 * param3}, #{param3} 
+    </select>
+
+    <select id="queryProxyListCountByPreviousProxyName" resultType="long">
+        SELECT count(1) FROM proxy_list_mapper WHERE parent_proxy_name = #{param1} AND mapper_proxy_name = proxy_name
+    </select>
+
+    <select id="queryRechargeByCodeWithToProxyName" resultType="com.proxy.entity.RechargeCodeTransferEntity">
+        SELECT * FROM recharge_code_transfer WHERE to_proxy_name = #{param1} AND recharge_code = #{param2}
+    </select>
+
+    <insert id="makeOverRechargeCode">
+        REPLACE INTO recharge_code_transfer (recharge_code,from_proxy_name,to_proxy_name,remark,transfer_time,recharge_code_type) VALUES (#{param1},#{param2},#{param3},#{param4},#{param5},#{param6})
+    </insert>
+
+    <update id="makeOverRechargeCodeTableRechargeCode">
+        UPDATE recharge_code SET from_proxy_name = #{param2},from_proxy_id = #{param3},create_time=#{param4} WHERE recharge_code = #{param1}
+    </update>
+
+    <select id="getRechargeCodeTypeList" resultType="com.proxy.entity.RechargeCodeTypeEntity">
+        SELECT * FROM recharge_code_type
+    </select>
+
+    <select id="getMakeOverToChild" resultType="com.proxy.entity.RechargeCodeTransferEntity">
+        SELECT * FROM recharge_code_transfer WHERE from_proxy_name = #{param1} AND to_proxy_name = #{param2}
+    </select>
+
+    <select id="getSurplusRechargeCount" resultType="int">
+        SELECT count(1) FROM recharge_code WHERE sell_status = 0 AND recharge_status = 0 AND recharge_type = #{param1} AND from_proxy_name = #{param2}
+    </select>
+
+    <select id="getSurplusRechargeList" resultType="com.proxy.entity.RechargeCodeEntity">
+        SELECT * FROM recharge_code WHERE sell_status = 0 AND recharge_status = 0 AND from_proxy_name = #{param1} AND recharge_type = #{param2} limit ${param3 * param4}, #{param4}
+    </select>
+
+    <select id="getSurplusRechargeListCount" resultType="long">
+        SELECT count(1) FROM recharge_code WHERE sell_status = 0 AND recharge_status = 0 AND from_proxy_name = #{param1} AND recharge_type = #{param2}
+    </select>
+    
+
+    <select id="getRechargeCodeUsed" parameterType="com.proxy.entity.RechargeCodeSellOrUsedParamEntity"
+            resultType="com.proxy.entity.RechargeCodeEntity">
+        SELECT * FROM recharge_code WHERE from_proxy_name = #{proxyName} AND  sell_status = 1
+        <if test='buyBeginTimeLong != -1'>
+            AND create_time > #{buyBeginTimeLong}
+        </if>
+        <if test='buyEndTimeLong != -1'>
+            AND #{buyEndTimeLong} > create_time
+        </if>
+
+        <if test='sellBeginTimeLong != -1'>
+            AND sell_time > #{sellBeginTimeLong}
+        </if>
+        <if test='sellEndTimeLong != -1'>
+            AND #{sellEndTimeLong} > sell_time
+        </if>
+
+        <if test='rechargeBeginTimeLong != -1'>
+            AND recharge_time > #{rechargeBeginTimeLong}
+        </if>
+        <if test='rechargeEndTimeLong != -1'>
+            AND #{rechargeEndTimeLong} > recharge_time
+        </if>
+        <if test="remark != null">
+            AND remark LIKE CONCAT('%',#{remark},'%')
+        </if>
+        <if test="rechargeCode != null">
+            AND #{rechargeCode} = recharge_code
+        </if>
+        <if test="rechargeType != null">
+            AND #{rechargeType} = recharge_type
+        </if>
+        <if test="status != null">
+            AND #{status} = status
+        </if>
+        <if test="sellStatus != null">
+            AND #{sellStatus} = sell_status
+        </if>
+        <if test="rechargeStatus != null">
+            AND #{rechargeStatus} = recharge_status
+        </if>
+        order by sell_time desc limit ${page * size}, #{size}
+    </select>
+
+    <select id="getRechargeCodeUsedCount" parameterType="com.proxy.entity.RechargeCodeSellOrUsedParamEntity"
+            resultType="long">
+        SELECT count(1) FROM recharge_code WHERE from_proxy_name = #{proxyName} AND  sell_status = 1
+        <if test='buyBeginTimeLong != -1'>
+            AND create_time > #{buyBeginTimeLong}
+        </if>
+        <if test='buyEndTimeLong != -1'>
+            AND #{buyEndTimeLong} > create_time
+        </if>
+
+        <if test='sellBeginTimeLong != -1'>
+            AND sell_time > #{sellBeginTimeLong}
+        </if>
+        <if test='sellEndTimeLong != -1'>
+            AND #{sellEndTimeLong} > sell_time
+        </if>
+
+        <if test='rechargeBeginTimeLong != -1'>
+            AND recharge_time > #{rechargeBeginTimeLong}
+        </if>
+        <if test='rechargeEndTimeLong != -1'>
+            AND #{rechargeEndTimeLong} > recharge_time
+        </if>
+        <if test="remark != null">
+            AND remark LIKE CONCAT('%',#{remark},'%')
+        </if>
+        <if test="rechargeCode != null">
+            AND #{rechargeCode} = recharge_code
+        </if>
+        <if test="rechargeType != null">
+            AND #{rechargeType} = recharge_type
+        </if>
+        <if test="status != null">
+            AND #{status} = status
+        </if>
+        <if test="sellStatus != null">
+            AND #{sellStatus} = sell_status
+        </if>
+        <if test="rechargeStatus != null">
+            AND #{rechargeStatus} = recharge_status
+        </if>
+    </select>
+
+    <select id="getRechargeCodeTransfer" parameterType="com.proxy.entity.RechargeCodeSellOrUsedParamEntity"
+            resultType="com.proxy.entity.RechargeCodeTransferEntity">
+        SELECT * FROM recharge_code_transfer WHERE from_proxy_name = #{proxyName}
+        <if test='buyBeginTimeLong != -1'>
+            AND transfer_time > #{buyBeginTimeLong}
+        </if>
+        <if test='buyEndTimeLong != -1'>
+            AND #{buyEndTimeLong} > transfer_time
+        </if>
+        <if test="remark != null">
+            AND remark LIKE CONCAT('%',#{remark},'%')
+        </if>
+        <if test="rechargeCode != null">
+            AND  #{rechargeCode} = recharge_code
+        </if>
+        <if test="rechargeType != null">
+            AND  #{rechargeType} = recharge_code_type
+        </if>
+        order by transfer_time desc limit ${page * size}, #{size}
+    </select>
+
+    <select id="getRechargeCodeTransferCount" parameterType="com.proxy.entity.RechargeCodeSellOrUsedParamEntity"
+            resultType="long">
+        SELECT count(1) FROM recharge_code_transfer WHERE from_proxy_name = #{proxyName}
+        <if test='buyBeginTimeLong != -1'>
+            AND transfer_time > #{buyBeginTimeLong}
+        </if>
+        <if test='buyEndTimeLong != -1'>
+            AND #{buyEndTimeLong} > transfer_time
+        </if>
+        <if test="remark != null">
+            AND remark LIKE CONCAT('%',#{remark},'%')
+        </if>
+        <if test="rechargeCode != null">
+            AND  #{rechargeCode} = recharge_code
+        </if>
+        <if test="rechargeType != null">
+            AND  #{rechargeType} = recharge_code_type
+        </if>
+    </select>
+    
+    <update id="sellRechargeCode">
+        UPDATE recharge_code SET sell_time = #{param1},sell_status = 1,recharge_account = #{param3},recharge_user_id = #{param4}  WHERE recharge_code = #{param2}
+    </update>
+
+    <update id="sellRechargeCodeSign">
+        UPDATE recharge_code SET sell_time = #{param1},sell_status = 1,sell_remark=#{param3}  WHERE recharge_code = #{param2}
+    </update>
+</mapper>

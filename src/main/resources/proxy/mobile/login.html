@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>登录</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <script>var _IS_AUTH_ = false</script>
+    <script src="static/javascripts/require.js"></script>
+    <link href="static/stylesheets/entrance.css" rel="stylesheet" type="text/css">
+    <script src="static/javascripts/login.js"></script>
+</head>
+
+<body>
+<div id="webView">
+   <header>
+       <h1>登录</h1>
+   </header>
+   
+   <div class="title-info">云秒代理后台</div>
+    <ul class="form">
+       <li>
+           <div class="text">
+               <i class="icon icon-user"></i>
+               <input type="text" id="account" placeholder="请输入账号" />
+           </div>
+       </li>
+       <li>
+           <div class="text">
+               <i class="icon icon-pass"></i>
+               <input type="password" id="password" placeholder="请输入密码" />
+           </div>
+       </li>
+       <li>
+           <button class="btn-submit" id="loginButton">登录</button>
+       </li>
+       <li class="link-bar">
+          <div>
+             没有账号？<span class="link" data-href="register.html">注册</span>
+          </div>
+           
+           <span class="link" data-href="forget.html">忘记密码</span>
+       </li>
+    </ul>
+</div>
+</body>
+</html>

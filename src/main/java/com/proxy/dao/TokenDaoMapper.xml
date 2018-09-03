@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.proxy.dao.TokenDaoMapper">
+
+    <insert id="createToken">
+        REPLACE INTO token (proxy_id,proxy_name,token,create_time) VALUES (#{param1},#{param2},#{param3},#{param4})
+    </insert>
+
+    <select id="checkToken" resultType="com.proxy.entity.TokenEntity">
+        SELECT * FROM token
+        <where>
+            <if test="param1 != 0">
+                AND proxy_id = #{param1}
+            </if>
+            <if test="param2 != null">
+                AND proxy_name = #{param2}
+            </if>
+            <if test="param3 != null">
+                AND token = #{param3}
+            </if>
+            <if test="param4 != 0">
+                AND create_time > #{param4}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cloudSeckill.dao.mapper.RedPacketMapper">
+
+    <insert id="insertRedPacket" parameterType="com.cloudSeckill.dao.domain.RedPacket">
+        INSERT INTO red_packet (wechat_id,user_id,money,packet_date,group_name,group_id) 
+        VALUES (#{wechat_id},#{user_id},#{money},#{packet_date},#{group_name},#{group_id})
+    </insert>
+    
+    <select id="selectRedPacketSumToday" parameterType="com.cloudSeckill.dao.domain.RedPacket" resultType="int">
+        SELECT COALESCE(sum(money),0) FROM red_packet WHERE packet_date >= #{beginPacketTime} AND #{endPacketTime} > packet_date AND user_id = #{user_id}
+    </select>
+
+
+    <select id="selectRedPacketByDateAndWechatId" parameterType="com.cloudSeckill.dao.domain.RedPacket" resultType="com.cloudSeckill.dao.domain.RedPacket">
+        SELECT * FROM red_packet
+        <where>
+            <if test='beginPacketTime != null'>
+                AND packet_date >= #{beginPacketTime}
+            </if>
+            <if test='beginPacketTime != null'>
+                AND #{endPacketTime} > packet_date
+            </if>
+            AND user_id IN
+            <foreach collection="userIdList" item="item" index="index"  open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        order by group_id desc
+    </select>
+</mapper>

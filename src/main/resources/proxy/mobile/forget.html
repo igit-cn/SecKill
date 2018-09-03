@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>忘记密码</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <script>var _IS_AUTH_ = false</script>
+    <script src="static/javascripts/require.js"></script>
+    <link href="static/stylesheets/entrance.css" rel="stylesheet" type="text/css">
+    <script src="static/javascripts/forget.js"></script>
+</head>
+
+<body>
+<div id="webView">
+   <header>
+       <div class="left-btn icon-back" data-href="login.html"></div>
+       <h1>忘记密码</h1>
+   </header>
+
+    <ul class="form">
+       <li>
+           <div class="text">
+               <i class="icon icon-email"></i>
+               <input type="text" id="email" placeholder="请输入邮箱" />
+           </div>
+       </li>
+       <li>
+           <div class="text item-verify">
+               <i class="icon icon-verify"></i>
+               <input type="text" id="emailCode" placeholder="请输入验证码" />
+               <button id="send">发送验证码</button>
+           </div>
+       </li>
+       <li>
+           <div class="text">
+               <i class="icon icon-pass"></i>
+               <input type="password" id="newPassword" placeholder="请输入新密码" />
+           </div>
+       </li>
+       <li>
+           <div class="text">
+               <i class="icon icon-pass"></i>
+               <input type="password" id="repassword" placeholder="请确认新密码" />
+           </div>
+       </li>
+       <li>
+           <button class="btn-submit" id="submitButton">找回密码</button>
+       </li>
+    </ul>
+</div>
+</body>
+</html>

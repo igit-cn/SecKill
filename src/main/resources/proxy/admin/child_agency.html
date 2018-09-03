@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<script src="static/base/javascripts/require.js"></script>
+    <script src="static/common/common.min.js"></script>
+	<link href="static/base/stylesheets/dialogform.css" rel="stylesheet" type="text/css">
+	<link href="static/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" type="text/css">
+	<script src="static/zTree/js/jquery.ztree.all.min.js"></script>
+	<style type="text/css">
+        .searchbar{margin:15px 15px 0}
+        .treeWrap {margin:8px 15px 15px;background-color:#f1f3f7;border:1px solid #dfe6ec;overflow:auto}
+        .ztree .pageControl{display:inline-block}
+        .ztree li span.button{margin-left:2px;margin-right:0;vertical-align:top; *vertical-align:middle}
+        .ztree li span.button.firstPage {background-position:-144px -16px}
+        .ztree li span.button.prevPage {background-position:-144px -48px}
+        .ztree li span.button.nextPage {background-position:-144px -64px}
+        .ztree li span.button.lastPage {background-position:-144px -32px}
+    </style>
+</head>
+<body>
+<div id="webView">
+    <div class="searchbar">
+        <form action="child_agency.html" method="get" id="serachForm">
+            <input type="text" name="keyword" id="keyword" class="input-w-120" placeholder="请输入代理账号"> 
+            <button type="submit" class="btn btn-primary" id="searchBtn"><i class="fa fa-search"></i> 搜索</button>
+         </form>
+    </div>
+	<div class="treeWrap">
+	    <ul id="zTree" class="ztree"></ul>
+	</div>
+</div>
+<script>
+var setAuthContainerHeight = function () {
+    var height = $(window).height() - 80;
+    $('.treeWrap').css('height', height + 'px');
+}
+$(function() {
+    setAuthContainerHeight();
+    $(window).resize(function() {
+        setAuthContainerHeight();
+    });
+    
+    var url = $.url(location.href);
+    var keyword = url.param('keyword');
+    
+    if(!$.empty(keyword)) {
+        initTreeByName();
+    } else {
+        initTreeById();
+    }
+    
+    $('#serachForm').on('submit', function() {
+        var keyword = $.trim($('#keyword').val());
+        if(keyword.length <= 0) {
+            $.sui.alert('请输入搜索关键词。', function() {
+                $('#keyword').focus();
+            });
+            return false;
+        }
+    })
+});
+
+// 通过关键词查询
+var initTreeByName = function() {
+    var url = $.url(location.href);
+    var keyword = $.trim(url.param('keyword'));
+    
+    if($.empty(keyword) || keyword.length <= 0) {
+        $.sui.alert('缺少参数或参数无效。');
+        return;
+    }
+    
+    $('#keyword').val(keyword);
+    
+    $.apiGet('queryProxyParentListByName', {proxyName: keyword}, function(res) {
+        var zNodes = [];
+        var data = initData(res.data,0);
+        if(!data) return;
+        zNodes.push(data);
+        initTree(zNodes, res.data.length);
+        console.log(res);
+    });
+}
+
+// 通过Id查询
+var initTreeById = function() {
+    var url = $.url(location.href);
+    var id = url.param('id'); 
+    
+    if($.empty(id) || isNaN(id)) {
+        $.sui.alert('缺少参数或参数无效。');
+        return;
+    }
+    
+    $.apiGet('queryProxyParentList', {proxyId: id}, function(res) {
+        var zNodes = [];
+        var data = initData(res.data,0);
+        if(!data) return;
+        zNodes.push(data);
+        initTree(zNodes, res.data.length);
+    });
+}
+
+// 图标
+var _iconUrl = 'static/zTree/css/zTreeStyle/img/diy/';
+var _rootIcon = [_iconUrl + '1_open.png', _iconUrl + '1_close.png'];
+var _icon = _iconUrl + '10.png';
+var treeObject;
+
+//初始化基础树
+function initTree(zNodes, length) {
+    treeObject = $.fn.zTree.init($("#zTree"), {
+        async: {
+            enable: true,
+            url: getUrl,
+            autoParam: ["proxyName=previousProxyName"],
+            dataType: 'json',
+            type: "get",
+            dataFilter: function(treeId, parentNode, res) {
+                // 整理服务端下发的数据 - 分页哦
+                var arr = [];
+                for(var i = 0; i < res.data.list.length; ++i) {
+                    var data = res.data.list[i];
+                    var name = data.proxy_name;
+                    var name = (parentNode.level + 1) + '级代理 ('+data.proxy_name+')';
+                    var obj = {
+                        name: name,
+                        proxyName: data.proxy_name,
+                        open: false,
+                        page: 1,
+                        isParent: data.child_exist,
+                        iconOpen: _icon,
+                        iconClose: _icon,
+                        icon: _icon
+                    }
+                    arr.push(obj);
+                }
+                return arr;
+            }
+        },
+        callback: {
+            beforeExpand: function(treeId, treeNode) {
+                if (treeNode.page == 0) treeNode.page = 1;
+			    return !treeNode.isAjaxing;
+            },
+            onClick: function(event, treeId, treeNode, clickFlag) {
+                treeObject.reAsyncChildNodes(treeNode, "refresh"); // 强行刷新节点树
+            },
+            onAsyncSuccess: function(event, treeId, treeNode, res) {
+                addDiyDom(treeId, treeNode, res);
+            }
+        }
+    }, zNodes);
+    // 刷新子代理
+    var nodes = treeObject.getNodeByTId("tree_" + length);
+    treeObject.reAsyncChildNodes(nodes);
+}
+
+// 定向分页
+var curPage = 0;
+function goPage(treeNode, page) {
+    treeNode.page = page;
+    if (treeNode.page<1) treeNode.page = 1;
+    if (treeNode.page>treeNode.maxPage) treeNode.page = treeNode.maxPage;
+    if (curPage == treeNode.page) return;
+    curPage = treeNode.page;
+    treeObject.reAsyncChildNodes(treeNode, "refresh");
+}
+    
+// 自定义控件 - 分页
+function addDiyDom(treeId, treeNode, res) {
+
+    if(res) {
+        treeNode.total = res.data.total;
+    }
+    if(!treeNode.total) return;
+    treeNode.maxPage = Math.ceil(treeNode.total / 50); // 分页大小为50
+    if(treeNode.maxPage < 2) return;
+    var aObj = $("#" + treeNode.tId + "_a");
+    
+    if(aObj.next('.pageControl').length <= 0) {
+        var addStr = "<div class='pageControl'>"+
+                         "<span class='button firstPage'></span>" +
+                         "<span class='button prevPage'></span>" +
+                         "<span class='button nextPage'></span>" +
+                         "<span class='button lastPage'></span>" +
+                     "</div>";
+        aObj.after(addStr);
+    }
+    var first = aObj.next('.pageControl').children('.firstPage');
+    var prev = aObj.next('.pageControl').children('.prevPage');
+    var next = aObj.next('.pageControl').children('.nextPage');
+    var last = aObj.next('.pageControl').children('.lastPage');
+    
+    first.off('click').on('click', function() {
+        if (!treeNode.isAjaxing) {
+            goPage(treeNode, 1);
+        }
+    });
+    last.off('click').on('click', function() {
+        if (!treeNode.isAjaxing) {
+            goPage(treeNode, treeNode.maxPage);
+        }
+    });
+    prev.off('click').on('click', function() {
+        if (!treeNode.isAjaxing) {
+            goPage(treeNode, treeNode.page-1);
+        }
+    });
+    next.off('click').on('click', function() {
+        if (!treeNode.isAjaxing) {
+            goPage(treeNode, treeNode.page+1);
+        }
+    });
+}
+// 接口URL整理
+function getUrl(treeId, treeNode) {
+    // 分页大小为50
+    var param = "page="+treeNode.page +"&size=50&token=" + $.getToken();
+    return "/api/queryProxyListByInfo.action?" + param;
+}
+
+// 初始化数据 (递归整理数据)
+function initData(data, i) {
+    if(typeof data[i] == 'undefined') return null;
+    var name = data[i].proxy_level + '级代理 ('+data[i].proxy_name+')';
+    if(data[i].proxy_level == 0) name = '云秒后台';
+    var obj = {
+        name: name,
+        proxyName: data[i].proxy_name,
+        open: true,
+        page: 1,
+        isParent: data[i].child_exist
+    };
+    if(data[i].proxy_level == 0) {
+        obj.iconOpen = _rootIcon[0];
+        obj.iconClose = _rootIcon[1];
+        obj.icon = _rootIcon[0];
+    } else {
+        obj.iconOpen = _icon;
+        obj.iconClose = _icon;
+        obj.icon = _icon;
+    }
+    var children = initData(data, i + 1);
+    if(children) {
+        obj.children = [children];
+    }
+    return obj;
+}
+</script>
+</body>
+</html>

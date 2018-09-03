@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>登录</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <script src="javascripts/require.js"></script>
+    <link href="stylesheets/login.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+<div class="ui-view">
+
+    <div class="logo-wrap">
+        <div class="logo"></div>
+    </div>
+    <div class="input input-user">
+        <input id="userName" type="text"  placeholder="请输入帐号"/>
+    </div>
+    <div class="input input-pass">
+        <input id="userPassword" type="password" placeholder="请输入密码"/>
+    </div>
+    <div class="link-wrap">
+        <div data-href="/alterPass">忘记密码</div>
+    </div>
+    <div class="btn-warp">
+        <button id="submitButton">登录</button>
+    </div>
+    <div class="reg-link-wrap">
+        <div data-href="/register">注册新帐号</div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('#submitButton').on('click', function () {
+            var userName = document.getElementById("userName").value;
+            var userPwd = document.getElementById("userPassword").value;
+            var regNum = /^(\w)[0-9a-zA-Z_]{2,20}$/;
+            var regPwd = /^(\w){2,20}$/;
+            if ($.trim(userName).length == 0) {
+                $.toastError("请输入账号");
+                return ;
+            }
+            if (regNum.test($.trim(userName)) == false) {
+                $.toastError("账号不符合规则");
+                return ;
+            }
+            if ($.trim(userPwd).length == 0) {
+                $.toastError("请输入密码");
+                return ;
+            }
+            if (regPwd.test($.trim(userPwd)) == false) {
+                $.toastError("密码不符合规则");
+                return ;
+            }
+            
+            $.apiPost('/user/login', {
+                userName: userName,
+                userPass: userPwd
+            }, function (data) {
+                location.href = '/home';
+            }, function (data) {
+                $.toastError(data.returnData);
+            });
+        })
+    });
+</script>
+</body>
+</html>

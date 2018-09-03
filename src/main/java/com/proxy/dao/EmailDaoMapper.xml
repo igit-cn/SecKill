@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.proxy.dao.EmailDaoMapper">
+
+    <select id="getInTwoHoursEmail" resultType="com.proxy.entity.EmailEntity">
+        select * from email where email_address=#{param1} and send_time > #{param2}
+    </select>
+
+    <insert id="saveEmailCode">
+        INSERT INTO email (email_address,random_code,send_time) VALUES (#{param1},#{param2},#{param3})
+    </insert>
+    
+</mapper>

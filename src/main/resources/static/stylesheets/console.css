@@ -1,0 +1,232 @@
+@charset "utf-8";
+.dateTime {
+    color: #fff;
+    font-size: 12px;
+    padding: 10px 15px 3px
+}
+
+.panel {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    padding-bottom: 30px;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center
+}
+
+.panel .left-bar, .panel .right-bar {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    text-align: center
+}
+
+.panel .left-bar button, .panel .right-bar button {
+    background-color: #4f7bee;
+    width: 90px;
+    height: 32px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 7px;
+    margin-top: 7px
+}
+
+.panel .left-bar button:active, .panel .right-bar button:active {
+    opacity: .7
+}
+
+.panel .count {
+    padding: 0 20px
+}
+
+.panel .count .circle {
+    width: 70px;
+    height: 70px;
+    position: relative
+}
+
+.panel .count .circle span {
+    display: inline-block;
+    width: 70px;
+    height: 70px;
+    line-height: 70px;
+    border-radius: 50%;
+    position: absolute;
+    font-size: 18px;
+    color: #fff;
+    background-color: #4f7bee;
+    text-align: center;
+    z-index: 3
+}
+
+.panel .count .circle:after, .panel .count .circle:before {
+    content: "";
+    display: inline-block;
+    position: relative;
+    position: absolute;
+    border-radius: 50%
+}
+
+.panel .count .circle:before {
+    width: 84px;
+    height: 84px;
+    position: absolute;
+    border-radius: 50%;
+    z-index: 2;
+    left: -7px;
+    top: -7px;
+    background-color: rgba(79, 123, 238, .5)
+}
+
+.panel .count .circle:after {
+    width: 104px;
+    height: 104px;
+    z-index: 1;
+    left: -17px;
+    top: -17px;
+    background-color: rgba(79, 123, 238, .2)
+}
+
+.list {
+    padding: 10px
+}
+
+.list .item {
+    margin-bottom: 10px;
+    background-color: #fff
+}
+
+.list .item .header {
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+    padding: 14px 10px 0
+}
+
+.list .item .header, .list .item .header .avatar {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex
+}
+
+.list .item .header .avatar {
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center
+}
+
+.list .item .header .avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%
+}
+
+.list .item .header .avatar span {
+    color: #4f7bee;
+    font-size: 16px;
+    font-weight: 700;
+    padding-left: 14px
+}
+
+.list .item .header .right-bar {
+    text-align: right
+}
+
+.list .item .header .right-bar .date {
+    color: #999
+}
+
+.list .item .header .right-bar .btn-bar {
+    padding-top: 10px
+}
+
+.list .item .header .right-bar .btn-bar button {
+    color: #4f7bee;
+    font-size: 14px;
+    border: 1px solid #4f7bee;
+    border-radius: 6px;
+    width: 50px;
+    height: 28px;
+    margin-left: 2px
+}
+
+.list .item .header .right-bar .btn-bar button:active {
+    background-color: #4f7bee;
+    color: #fff
+}
+
+.list .item .remark {
+    padding: 14px 10px 0
+}
+
+.list .item .arrow {
+    text-align: center;
+    padding: 14px
+}
+
+.list .item .arrow:before {
+    border: solid #7f7f7f;
+    content: "";
+    left: 6px;
+    display: inline-block;
+    border-width: 2px 2px 0 0;
+    width: 8px;
+    height: 8px;
+    -webkit-transition-duration: 0;
+    transition-duration: 0;
+    -webkit-transform: rotate(135deg);
+    transform: rotate(135deg);
+    position: relative
+}
+
+.list .item .arrow-up:before {
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    top: 5px
+}
+
+.list .item .contents {
+    background-color: #eff3ff;
+    display: none
+}
+
+.list .item .contents ul {
+    overflow: auto
+}
+
+.list .item .contents ul li {
+    width: 50%;
+    float: left
+}
+
+.list .item .contents ul li .box {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    padding: 10px 20px;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    align-items: center
+}
+
+.list .item .contents ul li .box .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%
+}
+
+.list .item .contents ul li .box .intro {
+    padding-left: 10px;
+    font-size: 12px;
+}
+.introColor {
+    color: #4f7bee
+}
+
+.list .item .contents ul li .box .intro span {
+    display: block;
+    font-size: 14px;
+    font-weight: 700
+}

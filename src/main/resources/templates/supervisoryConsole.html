@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>监控台</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <script src="static/javascripts/require.js"></script>
+    <link href="static/stylesheets/console.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+<div class="ui-view">
+  
+   <header class="header">
+       <div class="left-btn icon-back" data-href="/pc"></div>
+       <h1>监控台</h1>
+   </header>
+   <div class="dateTime">统计开始时间:</div>
+   <div class="panel">
+       <div class="left-bar">
+           <button class="openStatistics">开始统计</button><br/>
+           <button>查询</button>
+       </div>
+       <div class="count">
+           <div class="circle"><span class="integral">0</span></div>
+       </div>
+       <div class="right-bar">
+           <button>设置管理员</button><br/>
+           <button>设置托号</button>
+       </div>
+   </div>
+   
+   <div class="list" id="list"></div>
+</div>
+
+<script id="itemTpl" type="text/x-dot-template">
+    <div class="item">
+        <div class="header">
+            <div class="avatar">
+                <img src="images/avatar2.png" />
+                <span>{{=it.name}}</span>
+            </div>
+            <div class="right-bar">
+                <div class="date">2017-8-23 15:20:30</div>
+                <div class="btn-bar">
+                    <button>详情</button>
+                    <button>上分</button>
+                    <button>下分</button>
+                </div>
+            </div>
+        </div>
+        <div class="remark green">
+            红包详情：50-6(235)<span>中雷</span><br/>
+            本包盈亏：－100
+        </div>
+        <div class="arrow"></div>
+        <div class="contents" id="{{=it.contentName}}">
+            <ul>
+				{{ for(var i=0, length=5; i<length; i++) { }}
+				<li>
+					<div class="box">
+						<img src="images/avatar2.png" class="avatar" />
+						<div class="intro">
+							<span>王五</span>
+							11.22
+						</div>
+					</div>
+				</li>
+				{{ } }}		
+                <li>
+                    <div class="box">
+                        <img src="images/avatar2.png" class="avatar" />
+                        <div class="intro">
+                            <span>王五</span>
+                            11.22
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <div class="box">
+                        <img src="images/avatar2.png" class="avatar" />
+                        <div class="intro">
+                            <span>王五</span>
+                            11.22
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript">
+    var listCount = 0;
+    var sseSource ;
+    $(function() {
+        $('.openStatistics').on('click', function() {
+            // 模拟数据
+			var data = {
+                name: '张三',
+                contentName: 'content' + listCount++
+            }
+            var template = doT.template($('#itemTpl').text());
+            // 动态输出列表
+            $('#list').append(template(data));
+
+            // 展开隐藏
+            $('.arrow').off('click').on('click', function() {
+                var elem = $(this).next('.contents');
+                if($(this).hasClass('arrow-up')) {
+                    elem.hide();
+                    $(this).removeClass('arrow-up');
+                } else {
+                    elem.show();
+                    $(this).addClass('arrow-up');
+                }
+            });
+//            modifyStaticsOpen( ! $(".openStatistics").hasClass('hasStart'));
+        });
+    })
+    /**
+     * 时间格式化工具
+     */
+    function formatDateTime(inputTime) {
+        var date = new Date(inputTime);
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        m = m >= 10 ? m : '0' + m;
+        var d = date.getDate();
+        d = d >= 10 ? d : '0' + d;
+        var h = date.getHours();
+        h = h >= 10 ? h : '0' + h ;
+        var minute = date.getMinutes();
+        var second = date.getSeconds();
+        minute = minute >= 10 ? minute : '0' + minute;
+        second = second >= 10 ? second : '0' + second;
+        return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+    }
+    /**
+     * 开关统计
+     */
+    function modifyStaticsOpen(status) {
+        var openStatistics = $(".openStatistics");
+        if(status) {
+            openStatistics.addClass("hasStart");
+            openStatistics.text("停止统计");
+            $(".dateTime").text("统计开始时间:  " + formatDateTime(new Date().getTime()));
+            sseReq();
+        }else{
+            openStatistics.removeClass("hasStart");
+            openStatistics.text("开始统计");
+            $(".dateTime").text("统计开始时间:");
+            sseSource.close();
+        }
+    }
+    /**
+     * 接收SSE推送过来的包数据
+     */
+    function sseReq() {
+        if (!!!window.EventSource) {
+            $.toastError("浏览器不支持SSE");
+            modifyStaticsOpen(false);
+            return;
+        }
+        if(sseSource != null){
+            sseSource.close();//如果上一个接收器不是空的就先关掉上一个
+        }
+        sseSource = new EventSource('/wc/startstatistics2');
+        sseSource.addEventListener('message', function (e) {
+            var data = e.data;
+            if(data) {
+                console.log("返回数据："+data);
+                var responseJson = eval("(" + data + ")");
+                var mSendUser = responseJson.mSendUser;
+                var pickPeopleList = responseJson.pickPeopleList;
+                console.log("mSendUser：" + mSendUser);
+                console.log("pickPeopleList：" + pickPeopleList);
+                var statisticTotal = -1*responseJson.totalStatisticsProfit/100;
+                console.log("statisticTotal：" + statisticTotal);
+                $(".integral").text(statisticTotal);
+                //addItemInfo2(mSendUser,pickPeopleList);
+            }
+        });
+
+        sseSource.addEventListener('open', function (e) {
+            console.log("链接打开");
+        }, false);
+
+        sseSource.addEventListener('error', function (e) {
+            modifyStaticsOpen(true);
+            if (e.readyState == EventSource.CLOSED) {
+                console.log("链接关闭");
+                sseReq();
+            } else {
+                console.log(e.readyState);
+            }
+        }, false);
+    };
+    
+</script>
+</body>
+</html>

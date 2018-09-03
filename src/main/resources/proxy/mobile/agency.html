@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>代理列表</title>
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    <script src="static/javascripts/require.js"></script>
+    <link href="static/stylesheets/agency.css" rel="stylesheet" type="text/css">
+    <script src="static/javascripts/agency.js"></script>
+</head>
+
+<body>
+<div id="webView">
+   <header>
+      <div class="left-btn icon-back" data-href="index.html"></div>
+       <h1>代理列表</h1>
+   </header>
+   
+   <ul id="list" class="sui-list sui-border-b sui-list-cover"></ul>
+   <!--转让卡密-->
+    <div id="transferPopup" class="sui-popup-container">
+        <div class="sui-popup-mask"></div>
+        <div class="sui-popup-modal">
+            <header>
+               <div id="hidePopup" class="left-btn icon-back"></div>
+               <h1>转让卡密</h1>
+           </header>
+           <div class="popup-form">
+               <dl>
+                   <dt>
+                       <label>点卡类型</label>
+                   </dt>
+                   <dd>
+                       <div class="select sui-border">
+                           <select id="codeType">
+                               <option>root</option>
+                               <option>root</option>
+                               <option>root</option>
+                               <option>root</option>
+                           </select>
+                       </div>
+                   </dd>
+               </dl>
+               <dl>
+                   <dt>
+                       <label>转让个数</label>
+                   </dt>
+                   <dd>
+                       <div class="sui-border input input-small">
+                           <input id="count" type="text" placeholder="数量" />
+                       </div>
+                       &nbsp;个 
+                   </dd>
+               </dl>
+               <dl>
+                   <dt>
+                       <label>备注</label>
+                   </dt>
+                   <dd>
+                       <div class="sui-border input">
+                           <input id="remark" type="text" placeholder="备注" />
+                       </div>
+                   </dd>
+               </dl>
+           </div>
+           <div class="btn-bar">
+               <div class="wrap">
+                   <button id="submitButon" type="button">确定</button>
+               </div>
+           </div>
+        </div>
+    </div>
+    
+    
+</div>
+
+<script id="itemTpl" type="text/x-dot-template">
+<li>
+     <div class="cell-item">
+         <div class="container">
+             <dl>
+                 <dt>代理账号</dt>
+                 <dd>{{=it.proxy_name}} (<span id="remark_{{=it.proxy_name}}">{{=it.remark}}</span>)</dd>
+             </dl>
+             <dl>
+                 <dt>申请时间</dt>
+                 <dd>{{=it.register_time}}</dd>
+             </dl>
+             <ul class="btn-group">
+                 <li><button data-proxy="{{=it.proxy_name}}" data-remark="{{=it.remark}}" class="btn-edit">修改备注</button></li>
+                 <li><button data-proxy="{{=it.proxy_name}}" class="btn-transfer">转让卡密</button></li>
+                 <li><button data-proxy="{{=it.proxy_name}}" class="btn-detail">转让详情</button></li>
+             </ul>
+             <div class="detail" style="display:none" data-ajax="true">
+                <dl>
+                    <dd>
+                        <table>
+                            <thead>
+                             <tr>
+                                 <th>转让时间</th>
+                                 <th>充值码类型</th>
+                                 <th>充值码数量</th>
+                             </tr>
+                             </thead>
+                             <tbody>
+                             </tbody>
+                         </table>
+                    </dd>
+                </dl>
+             </div>
+         </div>
+     </div>
+</li>
+</script>
+</body>
+</html>

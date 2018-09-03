@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>首页</title>
+    <meta name="viewport"
+          content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <script src="javascripts/require.js"></script>
+    <script src="javascripts/emoji.js"></script>
+    <link href="stylesheets/home.css" rel="stylesheet" type="text/css"/>
+    <link href="stylesheets/emoji.css" rel="stylesheet" type="text/css" />
+    
+</head>
+
+<body>
+<div class="ui-view">
+
+    <header class="header">
+        <div class="right-btn" data-href="/alterPass">修改密码</div>
+    </header>
+    <div class="panel-wrap">
+        <div class="logo"><img src="images/logo.png"/></div>
+        <div class="count-bar">今日总计</div>
+    </div>
+
+    <div class="list-wrap">
+        <div class="list" id="list"></div>
+
+        <div class="item">
+            <div class="add">
+                <div>
+                    <div class="icon"></div>
+                    <div>添加更多</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="foot-bar-fiexd"></div>
+    <div class="foot-bar">
+        <p>
+            <button data-href="/search">查询</button>
+        </p>
+    </div>
+
+</div>
+
+<!--二维码显示-->
+<div class="qrcode-wrap">
+    <div class="qroce-box">
+        <img id="QRCode"/>
+        <span class="close"></span>
+    </div>
+</div>
+<div class="sui-mask qrcode-mask"></div>
+
+<script id="itemTpl" type="text/x-dot-template">
+    <div class="item">
+        <div class="box">
+            {{? it.onlineStatus == 2 }}
+            <div class="online"><span class="sui-gray">离线</span></div>
+            {{??}}
+            <div class="offline"><span class="sui-gray">在线</span></div>
+            {{?}}
+            <div class="user-info">
+                {{? it.headImg == null || it.headImg == ''}}
+                <img src='images/avatar2.png' class="avatar"/>
+                {{??}}
+                <img src='{{=it.headImg}}' class="avatar"/>
+                {{?}}
+                <div class="nick">{{=it.name}}</div>
+            </div>
+            <div class="price">今日总计：{{=it.todaySum/100}}元</div>
+            <div class="time">到期时间：{{=it.expirTimeStrFormat}}</div>
+            <div class="btn-bar">
+                {{? it.onlineStatus == 2 }}
+                <button class="toOnline" data-id="{{=it.id}}">上线</button>
+                {{?? }}
+                <button class="toOnline" data-id="{{=it.id}}">更新通讯录</button>
+                {{?}}
+                <button class="recharge" data-id="{{=it.id}}">充值</button>
+                <button class="setting" data-id="{{=it.id}}">设置</button>
+                <button class="removeItem" data-id="{{=it.id}}">解绑</button>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/javascript"  th:inline="javascript">
+
+    // 隐藏二维码
+    $('.qrcode-wrap .close, .qrcode-mask').on('click', function () {
+        $('.qrcode-wrap').hide();
+        $('.sui-mask').hide();
+        $.apiPost('/wechat/cancelLooperQRCodeStatus');
+    });
+    // 显示扫码登录后的信息
+    function showLoginInfo(data) {
+        window.location.reload();
+        $('.qrcode-wrap').hide();//隐藏二维码
+        $('.sui-mask').hide();
+    }
+    //解绑这个坑
+    var removeItem = function (id, item) {
+        $.apiPost('/home/removeItem', {
+                    id: id
+                },
+                function (data) {
+                    window.location.reload();
+//                    item.remove();
+                }, function (data) {
+                    $.toastError(data.returnData);
+                })
+    };
+
+    //WebSocket获取二维码的响应
+    var webSocket;
+    if ('WebSocket' in window) {
+        webSocket = new WebSocket("ws://" + document.location.host + "/getQRCodeWebSocket");
+    } else if ('MozWebSocket' in window) {
+        webSocket = new MozWebSocket("ws://" + document.location.host + "/getQRCodeWebSocket");
+    } else {
+        webSocket = new SockJS("http://" + document.location.host + "/sockjs/getQRCodeWebSocket");
+    }
+    
+    webSocket.onmessage = function (evnt) {
+        var data = evnt.data;
+        if (data == "wechatLoginSuccess") {//是登录信息
+            showLoginInfo(data);
+        } else if(data == "closeQRCodeByTimeout"){
+            $('.qrcode-wrap').hide();
+            $('.sui-mask').hide();
+        } else {//服务器抛出异常
+            console.log("异常报错" + data);
+        }
+    };
+
+    var insertItem = function (info) {
+        var template = doT.template($('#itemTpl').text());
+        $('#list').append(template(info));
+        //获取二维码
+        $('.toOnline').off('click').on('click', function () {
+            $('.qrcode-wrap').show();
+            $('.sui-mask').show();
+            var index = $(this).data('id');
+            $('#QRCode').attr("src", "/wechat/getQRCode?index=" + index +"&" + Date.parse(new Date()));
+        });
+        //设置
+        $('.setting').off('click').on('click', function () {
+            location.href = "/settings?id=" + $(this).data('id');
+        });
+        //解绑条目
+        $('.removeItem').off('click').on('click', function () {
+            removeItem($(this).data('id'), $(this).parents('.item'));
+        });
+        //更新通讯录
+        $('.updateFriendList').off('click').on('click', function () {
+            updateFriendList($(this).data('id'), $(this).parents('.item'))
+        });
+
+        //充值
+        $('.recharge').off('click').on('click', function () {
+            var id = $(this).data('id');
+            $.dialog({
+                title: '充值',
+                text: '请输入充值码',
+                html: '<div class="sui-dialog-input"><input type="text" placeholder="充值码" /></div>',
+                autoClose: false,
+                buttons: [{
+                    text: '取消',
+                    onClick: function () {
+                        $.closeDialog();
+                    }
+                }, {
+                    text: '确定',
+                    onClick: function (rechargeCode) {
+                        // 判断充值码是否为空
+                        if (0 >= rechargeCode.length) {
+                            $('.sui-dialog-input input')[0].focus();
+                            return;
+                        }
+                        $.closeDialog();
+                        $.toastSuccess("正在充值");
+                        $.apiPost('/home/rechargeCodeUp', {
+                            rechargeCode: rechargeCode,
+                            id: id
+                        }, function (data) {
+                            $.toastSuccess("充值成功");
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1000);
+                        }, function (data) {
+                            $.closeDialog();
+                            $.toastError(data.returnData);
+                        });
+                    }
+                }]
+            });
+        })
+    }
+
+    $(function () {
+        //添加更多坑
+        $('.add').on('click', function () {
+            $.dialog({
+                title: '充值',
+                text: '请输入充值码',
+                html: '<div class="sui-dialog-input"><input type="text" placeholder="充值码" /></div>',
+                autoClose: false,
+                buttons: [{
+                    text: '取消',
+                    onClick: function () {
+                        $.closeDialog();
+                    }
+                }, {
+                    text: '确定',
+                    onClick: function (rechargeCode) {
+                        // 判断充值码是否为空
+                        if (0 >= rechargeCode.length) {
+                            $('.sui-dialog-input input')[0].focus();
+                            return;
+                        }
+                        $.closeDialog();
+                        $.toastSuccess("正在充值");
+                        $.apiPost('/home/rechargeCodeUp', {
+                            rechargeCode: rechargeCode,
+                            id: -1 //-1说明坑还没创建,充值的时候创建
+                        }, function (data) {
+                            window.location.reload();
+                        }, function (data) {
+                            $.closeDialog();
+                            $.toastError(data.returnData);
+                        });
+                    }
+                }]
+            });
+        })
+    });
+    
+    //显示用户信息
+    var userList = $.parseJSON([[${userInfo}]]);
+    var sum = [[${sum}]];
+    for (var i = 0; userList.length > i; i++) {  //循环LIST
+        var v = userList[i];//获取LIST里面的对象
+        var info = {
+            id: v.id,
+            userId: v.userId,
+            headImg: v.headImg,
+            name: v.name,
+            income: v.income,
+            expirTime: v.expirTime,
+            onlineStatus: v.onlineStatus,
+            expirTimeStrFormat: v.expirTimeStrFormat,
+            todaySum : v.todaySum
+        }
+        insertItem(info);
+    }
+    $('.count-bar').html('今日总计：' + (sum / 100) + '元'); 
+    //初始化emoji用户名
+    var i = 0;
+    $(".nick").each(function(){
+        $(this).html(jEmoji.unifiedToHTML(userList[i].name.trim().replace(/\n/g, '<br/>')));
+        i++;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>查询</title>
+    <meta name="viewport"
+          content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <meta name="format-detection" content="email=no"/>
+    <script src="javascripts/require.js"></script>
+    <link href="stylesheets/search.css" rel="stylesheet" type="text/css"/>
+    <link href="stylesheets/datePicker.css" rel="stylesheet" type="text/css"/>
+    <script src="javascripts/datePicker.js"></script>
+    <script src="javascripts/store2.js"></script>
+</head>
+
+<body>
+<div class="ui-view">
+
+    <header class="header">
+        <div class="left-btn icon-back" data-href="/home"></div>
+        <h1>查询</h1>
+    </header>
+
+    <ul class="date-bar">
+        <li class="date-box">
+            <div class="date">
+                <input id="startTime" type="text" placeholder="开始时间" readonly="readonly"/>
+            </div>
+        </li>
+        <li class="line"> —</li>
+        <li class="date-box">
+            <div class="date">
+                <input id="endTime" type="text" placeholder="结束时间" readonly="readonly"/>
+            </div>
+        </li>
+    </ul>
+
+    <div class="search-bar">
+        <div class="select-member">
+            <div class="btn-box">
+                <button id="selectMember">选择成员</button>
+            </div>
+            <div class="member-list"></div>
+        </div>
+        <div class="btn-bar">
+            <button id="searchButton">查询</button>
+        </div>
+    </div>
+
+    <div class="data-list">
+        <table>
+            <thead>
+            <tr>
+                <th>群名</th>
+                <th>抢包次数</th>
+                <th>抢包金额</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script id="itemTpl" type="text/x-dot-template">
+    <tr>
+        <td>{{=it.groupName}}</td>
+        <td>{{=it.count}}</td>
+        <td>{{=it.money/100.0}}元</td>
+    </tr>
+</script>
+
+<script type="text/javascript">
+    document.getElementById("startTime").value = store.get("startTime");
+    document.getElementById("endTime").value = store.get("endTime");
+    
+    var insertGroup = function (info) {
+        var template = doT.template($('#itemTpl').text());
+        $('.data-list tbody').append(template(info));
+    };
+
+    var initMember = function (info) {
+        $.apiPost('/search/initMember', {},
+            function (data) {
+                if ($.trim(data.returnData).length == 0) {
+                    return ;
+                }
+                var userList = $.parseJSON(data.returnData);
+                for (var i = 0; userList.length > i; i++) {
+                    var info = userList[i];
+                    $('.member-list').append("<span>" + info.name + "</span>");
+                }
+            }, function (data) {
+                $.toastError(data.returnData);
+            });
+    };
+
+    $(function () {
+        initMember();
+
+        $('#selectMember').on('click', function () {
+            location.href = "/member";
+        });
+
+        // 选择日期
+        $('.date').on('click', function () {
+            var _self = $(this).children('input');
+            $.datePicker({
+                onSelect: function (data) {
+                    _self.val(data.str);
+                    var startTime = document.getElementById("startTime").value;
+                    var endTime = document.getElementById("endTime").value;
+                    store.set("startTime", startTime);
+                    store.set("endTime", endTime);
+                }
+            })
+        });
+
+        $('#searchButton').on('click', function () {
+            var startTime = document.getElementById("startTime").value;
+            var endTime = document.getElementById("endTime").value;
+            
+            $.apiPost('/search/searchGroup', {
+                startTime: startTime == '' ? null : startTime + ":00",
+                endTime: endTime == '' ? null : endTime  + ":00"
+            }, function (data) {
+                $('.data-list tbody').empty();
+                // 展示列表
+                var groupList = $.parseJSON(data.returnData);
+                if(groupList.length == 0){
+                    $.toastSuccess("未查到信息")
+                }
+                for (var i = 0; groupList.length > i; i++) {
+                    var info = groupList[i];
+                    insertGroup(info);
+                }
+            }, function (data) {
+                $.toastError(data.returnData);
+            });
+        });
+
+    });
+</script>
+</body>
+</html>
