@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("api")
 public class TestAction  {
     
-    @RequestMapping("test")
+    @RequestMapping("com/test")
     public void test(){
         System.out.println(RandomStringUtils.randomString("kx123456",10));
     }

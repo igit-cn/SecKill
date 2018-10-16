@@ -27,4 +27,12 @@ public class HttpClient {
             e.printStackTrace();
         }
     }
+
+    public void sendAsJson(HttpCallBack httpCallBack) {
+        try {
+            requestHttp.executeJsonPost(httpCallBack);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -9,7 +9,7 @@
 
     <select id="queryProxyInfoByAccountAndPassword" parameterType="string"
             resultType="com.proxy.entity.ProxyInfoEntity">
-        select * from proxy where proxy_name = #{param1} and password=#{param2}
+        select * from proxy where proxy_name = #{param1} and password = #{param2}
     </select>
 
     <select id="queryProxyInfoByAccount" parameterType="string" resultType="com.proxy.entity.ProxyInfoEntity">

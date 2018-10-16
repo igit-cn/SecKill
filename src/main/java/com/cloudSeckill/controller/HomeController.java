@@ -12,9 +12,7 @@ import com.cloudSeckill.data.request.RemoveItemRequest;
 import com.cloudSeckill.data.response.ProxyResultBean;
 import com.cloudSeckill.data.response.QueryRechargeCodeStatusBean;
 import com.cloudSeckill.data.response.ResponseBean;
-import com.cloudSeckill.service.HomeService;
-import com.cloudSeckill.service.UserService;
-import com.cloudSeckill.service.WechatService;
+import com.cloudSeckill.service.*;
 import com.cloudSeckill.utils.SessionUtils;
 import com.cloudSeckill.utils.TextUtils;
 import com.google.gson.Gson;
@@ -37,7 +35,7 @@ public class HomeController extends BaseController {
 
     @Autowired private HomeService homeService;
     @Autowired private UserService userService;
-    @Autowired private WechatService wechatService;
+    @Autowired private WechatServiceJson wechatService;
             
     @Autowired private UserMapper userMapper;
     @Autowired private RedPacketMapper redPacketMapper;

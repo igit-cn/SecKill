@@ -1,45 +1,49 @@
 Manifest-Version: 1.0
-Class-Path: libs/snakeyaml-1.17.jar libs/mybatis-spring-boot-starter-1
- .3.1.jar libs/spring-boot-starter-web-1.5.7.RELEASE.jar libs/netty-al
- l-4.1.16.Final.jar libs/mysql-connector-java-5.1.44.jar libs/protobuf
- -java-2.6.1.jar libs/jsr305-1.3.9.jar libs/mybatis-generator-core-1.3
- .5.jar libs/jackson-core-2.7.4.jar libs/jna-platform-4.5.2.jar libs/s
- pring-boot-starter-aop-1.5.7.RELEASE.jar libs/aspectjweaver-1.8.10.ja
- r libs/tomcat-embed-websocket-8.5.20.jar libs/logback-core-1.1.11.jar
-  libs/mybatis-spring-1.3.1.jar libs/spring-boot-starter-cache-1.5.7.R
- ELEASE.jar libs/tomcat-embed-el-8.5.20.jar libs/animal-sniffer-annota
- tions-1.14.jar libs/ognl-3.0.8.jar libs/spring-websocket-4.2.4.RELEAS
- E.jar libs/spring-data-commons-1.13.7.RELEASE.jar libs/jna-3.2.5.jar 
- libs/logback-classic-1.1.11.jar libs/spring-beans-4.3.11.RELEASE.jar 
- libs/json-20140107.jar libs/gson-2.8.2.jar libs/thymeleaf-layout-dial
- ect-1.4.0.jar libs/emoji-java-4.0.0.jar libs/spring-aop-4.3.11.RELEAS
- E.jar libs/spring-web-4.3.11.RELEASE.jar libs/slf4j-api-1.7.25.jar li
- bs/spring-oxm-4.3.11.RELEASE.jar libs/spring-webmvc-4.3.11.RELEASE.ja
- r libs/spring-boot-starter-thymeleaf-1.5.7.RELEASE.jar libs/classmate
- -1.3.4.jar libs/okio-1.4.0.jar libs/spring-context-4.3.11.RELEASE.jar
-  libs/spring-context-support-4.3.11.RELEASE.jar libs/jboss-logging-3.
- 3.1.Final.jar libs/xercesImpl-2.9.1.jar libs/jcl-over-slf4j-1.7.25.ja
- r libs/activation-1.1.jar libs/jackson-annotations-2.7.4.jar libs/spr
- ing-tx-4.3.11.RELEASE.jar libs/nekohtml-1.9.15.jar libs/unbescape-1.1
- .0.RELEASE.jar libs/j2objc-annotations-1.1.jar libs/spring-boot-start
- er-data-redis-1.5.7.RELEASE.jar libs/javax.mail-api-1.4.7.jar libs/ja
- vassist-3.21.0-GA.jar libs/tomcat-jdbc-8.5.20.jar libs/tomcat-embed-c
- ore-8.5.20.jar libs/okhttp-2.4.0.jar libs/tomcat-juli-8.5.20.jar libs
- /druid-1.1.9.jar libs/javax.mail-1.6.1.jar libs/spring-boot-starter-j
- dbc-1.5.7.RELEASE.jar libs/core-3.3.2.jar libs/guava-23.3-jre.jar lib
- s/mybatis-3.4.1.jar libs/jedis-2.9.0.jar libs/spring-boot-1.5.7.RELEA
- SE.jar libs/error_prone_annotations-2.0.18.jar libs/spring-expression
- -4.3.11.RELEASE.jar libs/jul-to-slf4j-1.7.25.jar libs/spring-boot-sta
- rter-tomcat-1.5.7.RELEASE.jar libs/spring-boot-starter-logging-1.5.7.
- RELEASE.jar libs/groovy-2.4.12.jar libs/spring-boot-starter-1.5.7.REL
- EASE.jar libs/thymeleaf-2.1.5.RELEASE.jar libs/mybatis-spring-boot-au
- toconfigure-1.3.1.jar libs/spring-data-redis-1.8.7.RELEASE.jar libs/j
- ackson-databind-2.7.4.jar libs/log4j-over-slf4j-1.7.25.jar libs/sprin
- g-data-keyvalue-1.2.7.RELEASE.jar libs/commons-pool2-2.4.2.jar libs/o
- pslabJutil-2.0.0.jar libs/validation-api-1.1.0.Final.jar libs/hiberna
- te-validator-5.3.5.Final.jar libs/spring-session-1.3.1.RELEASE.jar li
- bs/thymeleaf-spring4-2.1.5.RELEASE.jar libs/spring-boot-autoconfigure
- -1.5.7.RELEASE.jar libs/spring-core-4.3.11.RELEASE.jar libs/spring-jd
- bc-4.3.11.RELEASE.jar libs/spring-boot-devtools-1.5.7.RELEASE.jar
+Class-Path: libs/jna-platform-4.5.2.jar libs/opslabJutil-2.0.0.jar lib
+ s/ezmorph-1.0.3.jar libs/commons-beanutils-1.7.0.jar libs/commons-log
+ ging.jar libs/json-lib-2.4-jdk15.jar libs/jna-4.1.0.jar libs/commons-
+ collections-3.1.jar libs/commons-lang-2.5.jar libs/okhttputils-2.6.2.
+ jar libs/spring-boot-starter-aop-1.5.7.RELEASE.jar libs/spring-boot-s
+ tarter-cache-1.5.7.RELEASE.jar libs/spring-boot-starter-data-redis-1.
+ 5.7.RELEASE.jar libs/mybatis-spring-boot-starter-1.3.1.jar libs/sprin
+ g-session-1.3.1.RELEASE.jar libs/spring-boot-starter-thymeleaf-1.5.7.
+ RELEASE.jar libs/spring-boot-starter-web-1.5.7.RELEASE.jar libs/okhtt
+ p-2.4.0.jar libs/spring-websocket-4.2.4.RELEASE.jar libs/netty-all-4.
+ 1.16.Final.jar libs/protobuf-java-2.6.1.jar libs/guava-23.3-jre.jar l
+ ibs/gson-2.8.2.jar libs/core-3.3.2.jar libs/emoji-java-4.0.0.jar libs
+ /mybatis-3.4.1.jar libs/mybatis-spring-1.3.1.jar libs/mybatis-generat
+ or-core-1.3.5.jar libs/javax.mail-api-1.4.7.jar libs/javax.mail-1.6.1
+ .jar libs/nekohtml-1.9.15.jar libs/druid-1.1.9.jar libs/jackson-datab
+ ind-2.7.4.jar libs/jackson-core-2.7.4.jar libs/jackson-annotations-2.
+ 7.4.jar libs/okhttp-3.8.1.jar libs/spring-boot-starter-jdbc-1.5.7.REL
+ EASE.jar libs/spring-boot-starter-1.5.7.RELEASE.jar libs/spring-data-
+ redis-1.8.7.RELEASE.jar libs/spring-boot-devtools-1.5.7.RELEASE.jar l
+ ibs/spring-context-support-4.3.11.RELEASE.jar libs/mysql-connector-ja
+ va-5.1.44.jar libs/spring-webmvc-4.3.11.RELEASE.jar libs/spring-web-4
+ .3.11.RELEASE.jar libs/mybatis-spring-boot-autoconfigure-1.3.1.jar li
+ bs/spring-boot-autoconfigure-1.5.7.RELEASE.jar libs/spring-boot-1.5.7
+ .RELEASE.jar libs/spring-data-keyvalue-1.2.7.RELEASE.jar libs/spring-
+ context-4.3.11.RELEASE.jar libs/spring-aop-4.3.11.RELEASE.jar libs/as
+ pectjweaver-1.8.10.jar libs/jedis-2.9.0.jar libs/thymeleaf-spring4-2.
+ 1.5.RELEASE.jar libs/thymeleaf-layout-dialect-1.4.0.jar libs/spring-b
+ oot-starter-tomcat-1.5.7.RELEASE.jar libs/hibernate-validator-5.3.5.F
+ inal.jar libs/okio-1.13.0.jar libs/spring-jdbc-4.3.11.RELEASE.jar lib
+ s/spring-tx-4.3.11.RELEASE.jar libs/spring-oxm-4.3.11.RELEASE.jar lib
+ s/spring-data-commons-1.13.7.RELEASE.jar libs/spring-beans-4.3.11.REL
+ EASE.jar libs/spring-expression-4.3.11.RELEASE.jar libs/spring-core-4
+ .3.11.RELEASE.jar libs/jsr305-1.3.9.jar libs/error_prone_annotations-
+ 2.0.18.jar libs/j2objc-annotations-1.1.jar libs/animal-sniffer-annota
+ tions-1.14.jar libs/json-20140107.jar libs/activation-1.1.jar libs/xe
+ rcesImpl-2.9.1.jar libs/spring-boot-starter-logging-1.5.7.RELEASE.jar
+  libs/snakeyaml-1.17.jar libs/jcl-over-slf4j-1.7.25.jar libs/thymelea
+ f-2.1.5.RELEASE.jar libs/logback-classic-1.1.11.jar libs/jul-to-slf4j
+ -1.7.25.jar libs/log4j-over-slf4j-1.7.25.jar libs/slf4j-api-1.7.25.ja
+ r libs/commons-pool2-2.4.2.jar libs/tomcat-jdbc-8.5.20.jar libs/groov
+ y-2.4.12.jar libs/tomcat-embed-websocket-8.5.20.jar libs/tomcat-embed
+ -core-8.5.20.jar libs/tomcat-embed-el-8.5.20.jar libs/validation-api-
+ 1.1.0.Final.jar libs/jboss-logging-3.3.1.Final.jar libs/classmate-1.3
+ .4.jar libs/tomcat-juli-8.5.20.jar ognl-3.0.8.jar libs/javassist-3.21
+ .0-GA.jar libs/unbescape-1.1.0.RELEASE.jar libs/logback-core-1.1.11.j
+ ar
 Main-Class: com.cloudSeckill.WechatSbApplication
 
