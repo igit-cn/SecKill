@@ -12,9 +12,10 @@ import java.util.Map;
 
 @Configuration
 public class IpAddressConfig {
-    
-    @Autowired private ReceiveDataController receiveDataController;
-    
+
+    @Autowired
+    private ReceiveDataController receiveDataController;
+
     @Value("${three.ip1}")
     private String ip1;
     @Value("${three.ip1.weight}")
@@ -29,7 +30,7 @@ public class IpAddressConfig {
     private String ip3;
     @Value("${three.ip3.weight}")
     private String ip3Weight;
-    
+
     public String getRandomIP() {
         Map<String, Integer> list = new HashMap();
         list.put(ip1, Integer.parseInt(ip1Weight));
@@ -40,7 +41,7 @@ public class IpAddressConfig {
         for (String ip : list.keySet()) {
             allWeight += list.get(ip);
         }
-        
+
         int currentWeight = 0;
         int index = RandomUtil.integer(0, allWeight);
         for (String ip : list.keySet()) {
@@ -50,5 +51,9 @@ public class IpAddressConfig {
             }
         }
         return "";
+    }
+
+    public String[] getAllIP() {
+        return new String[]{ip1, ip2, ip3};
     }
 }

@@ -12,25 +12,22 @@ import com.cloudSeckill.net.http.callback.HttpCallBack;
 import com.cloudSeckill.net.http.callback.HttpClientEntity;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
 import com.cloudSeckill.service.URLGetJson.URLGetContent;
-import com.cloudSeckill.service.WechatApiService;
 import com.cloudSeckill.service.WechatServiceJson;
 import com.cloudSeckill.utils.RedisUtil;
+import com.cloudSeckill.utils.TextUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.proxy.utils.StringUtils;
-import com.zhy.http.okhttp.OkHttpUtils;
-import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.TextMessage;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -65,7 +62,18 @@ public class ReceiveDataController extends BaseController {
      */
     @RequestMapping(value = "/receive/notification", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public @ResponseBody
-    ResponseBean notification(String type, String WXUserId) {
+//    ResponseBean notification(String type, String WXUserId) {
+    ResponseBean notification(HttpServletRequest request) {
+        String str = "";
+        if (request.getParameterNames().hasMoreElements()) {
+            str = request.getParameterNames().nextElement();
+        }
+        if (TextUtils.isEmpty(str)) {
+            return resultResponseErrorObj("param is error");
+        }
+        Map map = new Gson().fromJson(new String(Base64.getDecoder().decode(str)), Map.class);
+        String WXUserId = (String) map.get("object");
+        String type = (String) map.get("type");
         if (StringUtils.isEmpty(WXUserId)) {
             return resultResponseErrorObj("token is error");
         }
@@ -200,12 +208,12 @@ public class ReceiveDataController extends BaseController {
     public void initNotification(String token, String chatRoom) {
         User user = tokenList.get(token);
         sendTextMsg(user,
-                "初始化完成，当前状态：\n" +
-                        "所有群抢包： " + (user.getPickType() == 1 ? "开" : "关") + "\n" +
-                        "指定群抢包： " + (user.getPickType() == 2 ? "开" : "关") + "\n" +
-                        "自动抢个人私聊包： " + (user.getAutoPickPersonal() == 1 ? "开" : "关") + "\n" +
-                        "自动接收个人转账： " + (user.getAutoReceiveTransfer() == 1 ? "开" : "关") + "\n" +
-                        "抢包延时： " + (user.getPickDelay() == 1 ? user.getPickDelayTime() + "秒" : "关") + "\n" +
+                "初始化完成,当前状态:\n" +
+                        "所有群抢包:" + (user.getPickType() == 1 ? "开" : "关") + "\n" +
+                        "指定群抢包:" + (user.getPickType() == 2 ? "开" : "关") + "\n" +
+                        "自动抢个人私聊包:" + (user.getAutoPickPersonal() == 1 ? "开" : "关") + "\n" +
+                        "自动接收个人转账:" + (user.getAutoReceiveTransfer() == 1 ? "开" : "关") + "\n" +
+                        "抢包延时:" + (user.getPickDelay() == 1 ? user.getPickDelayTime() + "秒" : "关") + "\n" +
                         "000 查看当前状态" + "\n" +
                         "111 查看指令"
                 , chatRoom, false);
@@ -217,12 +225,12 @@ public class ReceiveDataController extends BaseController {
     private void operationStatus(String token, String chatRoom) {
         User user = tokenList.get(token);
         sendTextMsg(user,
-                "当前状态：\n" +
-                        "所有群抢包： " + (user.getPickType() == 1 ? "开" : "关") + "\n" +
-                        "指定群抢包： " + (user.getPickType() == 2 ? "开" : "关") + "\n" +
-                        "自动抢个人私聊包： " + (user.getAutoPickPersonal() == 1 ? "开" : "关") + "\n" +
-                        "自动接收个人转账： " + (user.getAutoReceiveTransfer() == 1 ? "开" : "关") + "\n" +
-                        "抢包延时： " + (user.getPickDelay() == 1 ? user.getPickDelayTime() + "秒" : "关")
+                "当前状态:\n" +
+                        "所有群抢包:" + (user.getPickType() == 1 ? "开" : "关") + "\n" +
+                        "指定群抢包:" + (user.getPickType() == 2 ? "开" : "关") + "\n" +
+                        "自动抢个人私聊包:" + (user.getAutoPickPersonal() == 1 ? "开" : "关") + "\n" +
+                        "自动接收个人转账:" + (user.getAutoReceiveTransfer() == 1 ? "开" : "关") + "\n" +
+                        "抢包延时:" + (user.getPickDelay() == 1 ? user.getPickDelayTime() + "秒" : "关")
                 , chatRoom, false);
     }
 
@@ -232,14 +240,14 @@ public class ReceiveDataController extends BaseController {
     private void operationList(String token, String chatRoom) {
         User user = tokenList.get(token);
         sendTextMsg(user,
-                "1001：开启所有群\n" +
-                        "1002：开启指定群\n" +
-                        "1003：开启自动抢私聊包\n" +
-                        "1004：关闭自动抢私聊包\n" +
-                        "1005：开启自动接收个人转账\n" +
-                        "1006：关闭自动接收个人转账\n" +
-                        "延时X秒：设置延时秒抢\n" +
-                        "000：查看当前状态"
+                "1001:开启所有群\n" +
+                        "1002:开启指定群\n" +
+                        "1003:开启自动抢私聊包\n" +
+                        "1004:关闭自动抢私聊包\n" +
+                        "1005:开启自动接收个人转账\n" +
+                        "1006:关闭自动接收个人转账\n" +
+                        "延时X秒:设置延时秒抢\n" +
+                        "000:查看当前状态"
                 , chatRoom, false);
     }
 
@@ -316,15 +324,16 @@ public class ReceiveDataController extends BaseController {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSendMsg));
         //WXSendMsg
-        httpClient.addParams("method", "V1hTZW5kTXNn");
+//        httpClient.addParams("method", "V1hTZW5kTXNn");
         httpClient.addParams("object", user.getToken());
         httpClient.addParams("user", chatRoom);
         try {
-            httpClient.addParams("content", Base64.getEncoder().encodeToString(msg.getBytes("GB2312")));
+            httpClient.addParams("content", Base64.getEncoder().encodeToString(msg.getBytes("utf-8")));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        httpClient.send(null);
+//        httpClient.addParams("content", msg);
+        httpClient.sendAsJson(null);
     }
 
     /**
@@ -335,10 +344,10 @@ public class ReceiveDataController extends BaseController {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXReceiveRedPacket));
         //WXReceiveRedPacket
-        httpClient.addParams("method", "V1hSZWNlaXZlUmVkUGFja2V0");
+//        httpClient.addParams("method", "V1hSZWNlaXZlUmVkUGFja2V0");
         httpClient.addParams("object", token);
         httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
-        httpClient.send(new HttpCallBack<ReceiveRedPacketBean>() {
+        httpClient.sendAsJson(new HttpCallBack<ReceiveRedPacketBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, ReceiveRedPacketBean receiveRedPacketBean) {
                 redPick(json, token, receiveRedPacketBean.key, chatRoom, isGroup);
@@ -354,11 +363,12 @@ public class ReceiveDataController extends BaseController {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXOpenRedPacket));
         //WXOpenRedPacket
-        httpClient.addParams("method", "V1hPcGVuUmVkUGFja2V0");
+//        httpClient.addParams("method", "V1hPcGVuUmVkUGFja2V0");
         httpClient.addParams("object", token);
         httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
-        httpClient.addParams("key", Base64.getEncoder().encodeToString(key.getBytes()).trim().replace("\n", ""));
-        httpClient.send(new HttpCallBack<RedPickBean>() {
+//        httpClient.addParams("key", Base64.getEncoder().encodeToString(key.getBytes()).trim().replace("\n", ""));
+        httpClient.addParams("key", key);
+        httpClient.sendAsJson(new HttpCallBack<RedPickBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, RedPickBean redPickBean) {
                 //没有抢成功
@@ -429,10 +439,10 @@ public class ReceiveDataController extends BaseController {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXTransferOperation));
         //WXTransferOperation
-        httpClient.addParams("method", "V1hUcmFuc2Zlck9wZXJhdGlvbg==");
+//        httpClient.addParams("method", "V1hUcmFuc2Zlck9wZXJhdGlvbg==");
         httpClient.addParams("object", token);
         httpClient.addParams("transfer", json);
-        httpClient.send(null);
+        httpClient.sendAsJson(null);
     }
 
     //添加轮询user

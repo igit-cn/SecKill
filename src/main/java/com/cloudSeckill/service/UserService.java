@@ -200,6 +200,10 @@ public class UserService {
         User user = new User();
         user.setFromUserName(registerRequest.userName);
         user.setExpirTime(new Date(System.currentTimeMillis() + addUseTime));
+        //增加以下三个默认值，避免登陆后就时上线状态
+        user.setHeadImg("");
+        user.setName("");
+        user.setOnlineStatus(2);
         homeService.addItem(user);
         proxyResultBean.code = ResponseCode.RESPONSE_OK; 
         proxyResultBean.msg = "注册成功";

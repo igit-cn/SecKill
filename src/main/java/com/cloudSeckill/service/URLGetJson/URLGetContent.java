@@ -18,6 +18,7 @@ public class URLGetContent {
     public static final String WXReceiveRedPacket = ip + "WXReceiveRedPacket";
     public static final String WXOpenRedPacket = ip + "WXOpenRedPacket";
     public static final String WXTransferOperation = ip + "WXTransferOperation";
+    public static final String WXSetRecvMsgCallBack = ip + "WXSetRecvMsgCallBack";
 
     public static String getFullUrl(String ip, String url) {
         return String.format(url, ip);
