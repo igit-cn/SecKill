@@ -35,7 +35,7 @@ public class HomeController extends BaseController {
 
     @Autowired private HomeService homeService;
     @Autowired private UserService userService;
-    @Autowired private WechatServiceJson wechatService;
+    @Autowired private WechatServiceSocket wechatService;
             
     @Autowired private UserMapper userMapper;
     @Autowired private RedPacketMapper redPacketMapper;

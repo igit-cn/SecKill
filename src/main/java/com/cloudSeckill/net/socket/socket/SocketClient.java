@@ -5,8 +5,6 @@ import com.proxy.utils.StringUtils;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.util.Base64;
 import java.util.HashMap;
 
 public class SocketClient {
@@ -31,7 +29,17 @@ public class SocketClient {
         try {
             socket = new Socket(ipAddress, port);
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
+        }
+    }
+
+    public SocketClient(String ip, int port) {
+        try {
+            socket = new Socket(ip, port);
+        } catch (Exception e) {
+            System.out.println("访问地址：" + ip);
+            System.out.println("访问端口：" + port);
+            e.printStackTrace();
         }
     }
 
@@ -39,7 +47,8 @@ public class SocketClient {
         if (StringUtils.isEmpty(value)) {
             return;
         }
-        params.put(key, Base64.getEncoder().encodeToString(value.getBytes()));
+//        params.put(key, Base64.getEncoder().encodeToString(value.getBytes()));
+        params.put(key, value);
     }
 
     public void sendData() {
@@ -49,10 +58,12 @@ public class SocketClient {
                 pw = new PrintWriter(os);//将输出流包装成打印流
             }
             //字节输出流
-            pw.write(new Gson().toJson(params));
+            String json = new Gson().toJson(params);
+            System.out.println("请求参数：" + json);
+            pw.write(json);
             pw.flush();
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         params.clear();
     }
@@ -70,7 +81,35 @@ public class SocketClient {
             }
             return data;
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
+        } finally {
+            if (null != socket) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                }
+            }
+            if (null != is) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
+            if (null != br) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                }
+            }
+            if (null != os) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                }
+            }
+            if (null != pw) {
+                pw.close();
+            }
         }
         return "";
     }

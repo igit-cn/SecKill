@@ -14,6 +14,7 @@ import com.cloudSeckill.net.web_socket.WechatWebSocket;
 import com.cloudSeckill.service.URLGetJson.URLGetContent;
 import com.cloudSeckill.utils.RedisUtil;
 import com.cloudSeckill.utils.SessionUtils;
+import com.cloudSeckill.utils.TextUtils;
 import com.cloudSeckill.utils.Utils;
 import com.proxy.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +50,14 @@ public class WechatServiceJson {
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
         HttpClient httpClient = new HttpClient();
-        String randomIP = ipAddressConfig.getRandomIP();
-        System.out.println("随机地址 : " + randomIP);
+//        String randomIP = ipAddressConfig.getRandomIP();
+//        String randomIP = redisUtil.getStr("keng_id-" + userInfo.user_id);
+        String randomIP = redisUtil.getStr("keng_id-" + SessionUtils.getCurrentSelectKengId(session));
+        System.out.println("从缓存中获取keng-IP：" + randomIP);
+        if (TextUtils.isEmpty(randomIP)) {
+            randomIP = ipAddressConfig.getRandomIP();
+            System.out.println("随机地址 : " + randomIP);
+        }
         userInfo.ipAddress = randomIP;
         httpClient.setUrl(URLGetContent.getFullUrl(randomIP, URLGetContent.WXInitialize));
         httpClient.addParams("name", name);

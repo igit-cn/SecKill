@@ -1,12 +1,16 @@
 package com.cloudSeckill.net.http;
 
 import com.cloudSeckill.net.http.callback.HttpCallBack;
+import com.cloudSeckill.net.socket.socket.SocketClient;
+import com.cloudSeckill.utils.TextUtils;
 import com.google.gson.JsonObject;
 import com.proxy.utils.StringUtils;
 import com.squareup.okhttp.*;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Base64;
 import java.util.HashMap;
 
@@ -73,6 +77,58 @@ public class RequestHttp {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void executeJsonSocket(final HttpCallBack httpCallBack) throws UnsupportedEncodingException {
+        long start = System.currentTimeMillis();
+        try {
+            URI uri = new URI(urlPath);
+            SocketClient socketClient = new SocketClient(uri.getHost(), uri.getPort());
+            for (String key : paramMap.keySet()) {
+                socketClient.putParam(key, Base64.getEncoder().encodeToString(paramMap.get(key).getBytes()));
+            }
+            socketClient.putParam("method", Base64.getEncoder().encodeToString(uri.getPath().substring(1, uri.getPath().length()).getBytes()));
+            socketClient.sendData();
+            String resopnseData = socketClient.receiveData();
+            if (!TextUtils.isEmpty(resopnseData)) {
+                if (httpCallBack != null) {
+                    long time = System.currentTimeMillis() - start;
+                    if (time > 1000) {
+                        System.out.println("接口 " + urlPath + ":" + paramMap.get("method") + "  耗时 : " + time / 1000L);
+                    }
+                    httpCallBack.onResponseSuccess(resopnseData, resopnseData.getBytes(), urlPath);
+                }
+            } else {
+                if (httpCallBack != null) {
+                    httpCallBack.onResponseFail(null);
+                }
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+//        Request.Builder builder = new Request.Builder();
+//        builder.url(urlPath);
+//        builder.post(RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), Base64.getEncoder().encodeToString(getJsonPost().getBytes()).trim().replace("\n", "")));
+//        try {
+//            Response execute = new OkHttpClient().newCall(builder.build()).execute();
+//            if (execute.code() != 200) {
+//                if (httpCallBack != null) {
+//                    httpCallBack.onResponseFail(execute.request());
+//                }
+//            } else {
+//                byte[] byteData = execute.body().bytes();
+//                execute.body().close();
+//                if (httpCallBack != null) {
+//                    long time = System.currentTimeMillis() - start;
+//                    if (time > 1000) {
+//                        System.out.println("接口 " + urlPath + ":" + paramMap.get("method") + "  耗时 : " + time / 1000L);
+//                    }
+//                    httpCallBack.onResponseSuccess(new String(byteData, "UTF-8"), byteData, urlPath);
+//                }
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private String getJsonPost() {

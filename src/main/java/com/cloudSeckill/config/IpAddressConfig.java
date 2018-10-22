@@ -1,7 +1,6 @@
 package com.cloudSeckill.config;
 
 import com.cloudSeckill.controller.ReceiveDataController;
-import com.cloudSeckill.data.info.ReceiveConfigBean;
 import com.opslab.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +30,9 @@ public class IpAddressConfig {
     @Value("${three.ip3.weight}")
     private String ip3Weight;
 
+    @Value("${three.port}")
+    private String port;
+
     public String getRandomIP() {
         Map<String, Integer> list = new HashMap();
         list.put(ip1, Integer.parseInt(ip1Weight));
@@ -51,6 +53,10 @@ public class IpAddressConfig {
             }
         }
         return "";
+    }
+
+    public String getPort() {
+        return port;
     }
 
     public String[] getAllIP() {

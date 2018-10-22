@@ -17,11 +17,11 @@ public class InitApplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        for (String ip : ipAddressConfig.getAllIP()) {
-            HttpClient httpClient = new HttpClient();
-            httpClient.setUrl(URLGetContent.getFullUrl(ip, URLGetContent.WXSetRecvMsgCallBack));
-            httpClient.addParams("url", "http://" + local_ip + "/receive/notification");
-            httpClient.sendAsJson(null);
-        }
+//        for (String ip : ipAddressConfig.getAllIP()) {
+//            HttpClient httpClient = new HttpClient();
+//            httpClient.setUrl(URLGetContent.getFullUrl(ip, URLGetContent.WXSetRecvMsgCallBack));
+//            httpClient.addParams("url", "http://" + local_ip + "/receive/notification");
+//            httpClient.sendAsJson(null);
+//        }
     }
 }
