@@ -12,6 +12,8 @@ import com.cloudSeckill.net.http.callback.HttpCallBack;
 import com.cloudSeckill.net.http.callback.HttpClientEntity;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
 import com.cloudSeckill.service.URLGetJson.URLGetContent;
+import com.cloudSeckill.service.WechatServiceDll;
+import com.cloudSeckill.service.WechatServiceJson;
 import com.cloudSeckill.service.WechatServiceSocket;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
@@ -39,7 +41,7 @@ public class ReceiveDataController extends BaseController {
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private WechatServiceSocket wechatServeice;
+    private WechatServiceDll wechatServeice;
     @Autowired
     private RedPacketMapper redPacketMapper;
     @Autowired
@@ -121,8 +123,8 @@ public class ReceiveDataController extends BaseController {
      * 消息同步
      */
     private void MsgSync(String token) {
-        LogUtils.info("消息同步MsgSync：" + token);
         User user = tokenList.get(token);
+        LogUtils.info("消息同步用户：" + user.getFromUserName() + ";登陆wc账号：" + user.getName());
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSyncMessage));
         httpClient.addParams("object", token);
@@ -271,6 +273,7 @@ public class ReceiveDataController extends BaseController {
      */
     private void openGroupPick(String token, String chatRoom) {
         User user = tokenList.get(token);
+        LogUtils.info("开启指定群抢" + user.getFromUserName());
         if (user.getPickType() == 1) { //所有群抢
             sendTextMsg(user, "已开启所有群抢，开启失败", chatRoom, false);
             return;
@@ -284,6 +287,7 @@ public class ReceiveDataController extends BaseController {
      */
     private void closeGroupPick(String token, String chatRoom) {
         User user = tokenList.get(token);
+        LogUtils.info("关闭指定群抢:" + user.getFromUserName());
         if (user.getPickType() == 1) { //所有群抢
             sendTextMsg(user, "已开启所有群抢，关闭失败", chatRoom, false);
             return;
@@ -296,6 +300,7 @@ public class ReceiveDataController extends BaseController {
      * 发送文字消息 同步数据库
      */
     private void sendTextMsg(User user, String msg, String chatRoom, boolean isSaveDB) {
+        LogUtils.info(user.getFromUserName() + "=发送文字信息:" + msg);
         //同步数据库
         if (isSaveDB) {
             UserExample userExample = new UserExample();
@@ -323,6 +328,7 @@ public class ReceiveDataController extends BaseController {
      * 接受红包数据
      */
     private void ReceiveRedPacket(String json, String token, String chatRoom, boolean isGroup) {
+        LogUtils.info("接受红包数据");
         User user = tokenList.get(token);
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXReceiveRedPacket));
@@ -343,6 +349,7 @@ public class ReceiveDataController extends BaseController {
      * 抢红包
      */
     private void redPick(String json, String token, String key, String chatRoom, boolean isGroup) {
+        LogUtils.info("抢红包");
         User user = tokenList.get(token);
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXOpenRedPacket));

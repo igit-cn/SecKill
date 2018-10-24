@@ -1,5 +1,6 @@
 package com.proxy.service;
 
+import com.cloudSeckill.utils.TextUtils;
 import com.proxy.dao.RechargeCodeDaoMapper;
 import com.proxy.entity.RechargeCodeEntity;
 import com.proxy.entity.RechargeCodeTypeEntity;
@@ -34,6 +35,17 @@ public class RechargeCodeService {
         int statusInt = -1;
         try {
             statusInt = Integer.parseInt(status);
+            if(statusInt == 1){//已充值
+                statusInt = -1;
+                rechargeStatus = "1";
+            } else if(statusInt == 2){//已出售
+                statusInt = -1;
+                sellStatus = "1";
+            } else if(statusInt == 3){ //已冻结
+                statusInt = 1;
+            } else if(statusInt == 4){//已删除
+                statusInt = 2;
+            }
         } catch (Exception e) {}
         long beginRechargeTimeLong = 0;
         try {
@@ -46,11 +58,11 @@ public class RechargeCodeService {
         return rechargeCodeDaoMapper.queryRechargeCodeCount(beginTimeLong, endTimeLong, statusInt, beginRechargeTimeLong,
                 endRechargeTimeLong, rechargeCode, rechargeUserName, fromProxyName, remark,rechargeCodeType,sellStatus,rechargeStatus,0,0);
     }
-    
+
     /**
      * 条件选择查询充值码列表
      */
-    public List<RechargeCodeEntity> queryRechargeCodeList(int page, int size, String beginTime, String endTime, String status, String rechargeBeginTime, 
+    public List<RechargeCodeEntity> queryRechargeCodeList(int page, int size, String beginTime, String endTime, String status, String rechargeBeginTime,
           String rechargeEndTime, String rechargeCode,String rechargeCodeType, String rechargeUserName, String fromProxyName, String remark,String sellStatus,String rechargeStatus) {
 
         long beginTimeLong = 0;
@@ -75,7 +87,7 @@ public class RechargeCodeService {
             } else if(statusInt == 4){//已删除
                 statusInt = 2;
             }
-            
+
         } catch (Exception e) {}
         long beginRechargeTimeLong = 0;
         try {
@@ -88,29 +100,29 @@ public class RechargeCodeService {
 
         List<RechargeCodeEntity> rechargeCodeEntities = rechargeCodeDaoMapper.queryRechargeCodeList(page - 1, size, beginTimeLong, endTimeLong, statusInt, beginRechargeTimeLong,
                 endRechargeTimeLong, rechargeCode, rechargeUserName, fromProxyName, remark, rechargeCodeType, sellStatus, rechargeStatus, 0, 0);
-        
+
         //初始化显示状态
         for (RechargeCodeEntity rechargeCodeEntity : rechargeCodeEntities) {
             if(rechargeCodeEntity.status == 1){
                 rechargeCodeEntity.showStatus = 1;//已冻结
                 continue;
             }
-            
+
             if(rechargeCodeEntity.status == 2){
                 rechargeCodeEntity.showStatus = 2;//已删除
                 continue;
             }
-            
-            if (rechargeCodeEntity.recharge_status == 1) {
+
+            if (TextUtils.equals(status,"1") && rechargeCodeEntity.recharge_status == 1) {
                 rechargeCodeEntity.showStatus = 4;//已充值
                 continue;
             }
-            
-            if (rechargeCodeEntity.sell_status == 1) {
+
+            if (TextUtils.equals(status,"2") && rechargeCodeEntity.sell_status == 1) {
                 rechargeCodeEntity.showStatus = 3;//已出售
                 continue;
             }
-            
+
             rechargeCodeEntity.showStatus = 0;//正常未出售
         }
         //初始化卡类型
@@ -123,7 +135,7 @@ public class RechargeCodeService {
                 }
             }
         }
-        return rechargeCodeEntities; 
+        return rechargeCodeEntities;
     }
     /**
      * 获取充值码根据id
@@ -142,7 +154,7 @@ public class RechargeCodeService {
     public void rechargeToUser(String rechargeCode,String userName){
         rechargeCodeDaoMapper.rechargeToUser(rechargeCode,new Date().getTime(),userName);
     }
-    
+
     /**
      * 修改充值码状态
      */

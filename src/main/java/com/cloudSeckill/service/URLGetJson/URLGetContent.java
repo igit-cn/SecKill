@@ -4,9 +4,9 @@ public class URLGetContent {
     public static String url = "http://110.80.137.86:12888/api.php";
 //    public static final String ip = "http://47.92.166.84:2223/";
     //旧的接口
-//    private static final String ip = "http://%s:2223/";
+    private static final String ip = "http://%s:2223/";
     //socket接口
-    private static final String ip = "http://%s:8888/";
+//    private static final String ip = "http://%s:8888/";
     //private static final String ip = "http://127.0.0.1:2223/";
     public static final String WXInitialize = ip + "WXInitialize";
     public static final String WXGetQRCode = ip + "WXGetQRCode";

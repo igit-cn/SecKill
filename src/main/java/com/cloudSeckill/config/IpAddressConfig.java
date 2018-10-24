@@ -30,8 +30,8 @@ public class IpAddressConfig {
     @Value("${three.ip3.weight}")
     private String ip3Weight;
 
-    @Value("${three.port}")
-    private String port;
+//    @Value("${three.port}")
+//    private String port;
 
     public String getRandomIP() {
         Map<String, Integer> list = new HashMap();
@@ -55,9 +55,9 @@ public class IpAddressConfig {
         return "";
     }
 
-    public String getPort() {
-        return port;
-    }
+//    public String getPort() {
+//        return port;
+//    }
 
     public String[] getAllIP() {
         return new String[]{ip1, ip2, ip3};
