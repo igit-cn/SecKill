@@ -3,6 +3,9 @@ package com.cloudSeckill.utils;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+
 /**
  * 日志工具类
  */
@@ -59,11 +62,19 @@ public class LogUtils {
     }
 
     public static void errorLogout(Object obj) {
-        errorlog.error(obj.toString());
+        try {
+            errorlog.error(new String(obj.toString().getBytes("utf-8"), Charset.defaultCharset()));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void infoLogout(Object obj) {
-        infolog.info(obj.toString());
+        try {
+            infolog.info(new String(obj.toString().getBytes("utf-8"), Charset.defaultCharset()));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
 }

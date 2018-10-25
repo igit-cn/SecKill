@@ -43,13 +43,13 @@ public class WechatServiceDll {
     String mac = "00:22:5F:5F:03:27";
     String uuid = "002IEYVG-6000-K820-28G6-M80H64RWQSUQ";
     String uuid2 = "<softtype><k3>9.0.2</k3><k9>iPad</k9><k10>2</k10><k19>58BF17B5-2D8E-4BFB-A97E-38F1226F13F8</k19><k20>" + uuid
-            +"</k20><k21>neihe_5GHz</k21><k22>(null)</k22><k24>" + mac +"</k24><k33>\\345\\276\\256\\344\\277\\241</k33><k47>1</k47><k50>1</k50><k51>com.tencent.xin</k51><k54>iPad4,4</k54></softtype>";
+            + "</k20><k21>neihe_5GHz</k21><k22>(null)</k22><k24>" + mac + "</k24><k33>\\345\\276\\256\\344\\277\\241</k33><k47>1</k47><k50>1</k50><k51>com.tencent.xin</k51><k54>iPad4,4</k54></softtype>";
 
     /**
      * 初始化微信客户端
      */
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
-        DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
+        //DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
         int object = Integer.parseInt(DllInterface.instance.WXInitialize(name, uuid2, uuid));
         LogUtils.info("初始化uuid：" + uuid);
         LogUtils.info("初始化mac：" + mac);
@@ -169,8 +169,9 @@ public class WechatServiceDll {
         LogUtils.info("heartBeat结果：" + wxHeartBeat);
         HearBeatBean hearBeatBean = new Gson().fromJson(wxHeartBeat, HearBeatBean.class);
         if (hearBeatBean.status == 0) {
-            DllInterface.instance.WXSetRecvMsgCallBack(Integer.parseInt(userInfo.token), "http://47.106.107.116:2223/WXInitialize");
-            //saveWechatInfo(session, userInfo, qrCodeStatusBean);
+            //DllInterface.instance.WXSetRecvMsgCallBack(Integer.parseInt(userInfo.token), "http://47.106.107.116:2223/WXInitialize");
+            DllInterface.instance.WXSetRecvMsgCallBack(Integer.parseInt(userInfo.token), "http://127.0.0.1/receive/notification");
+            saveWechatInfo(session, userInfo, qrCodeStatusBean);
             return;
         }
     }
@@ -206,15 +207,14 @@ public class WechatServiceDll {
         wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("wechatLoginSuccess"));
         //登录成功之后token绑定微信id
         receiveDataController.addToken(user);
-
+        //发送初始化通知
+        receiveDataController.initNotification(user.getToken(), user.getWechatId());
 
         //同步通讯录
         List<SyncContactBean> chainList = new ArrayList();
         syncContact(user, chainList);
         redisUtil.set(qrCodeStatusBean.user_name, chainList);
 
-        //发送初始化通知
-        receiveDataController.initNotification(user.getToken(), user.getWechatId());
 
         LogUtils.info("用户 : " + user.getName() + " 扫码登录成功 来自账号 : " + user.getFromUserName());
     }
@@ -227,7 +227,7 @@ public class WechatServiceDll {
         List<SyncContactBean> syncContactBeen = new Gson().fromJson(WeSyncContact, new TypeToken<List<SyncContactBean>>() {
         }.getType());
         if (syncContactBeen.size() != 0 && syncContactBeen.get(0).isContinue != 0) {
-            for (int i = 0; i < syncContactBeen.size(); i++) {
+            for (int i = 0; i < syncContactBeen.size();i++) {
                 if (syncContactBeen.get(i).member_count != 0) {
                     chainList.add(syncContactBeen.get(i));
                 }

@@ -148,7 +148,7 @@ public class HomeController extends BaseController {
         }
         
         User user = userList.get(0);
-        wechatService.wechatLogout(user);//服务器下线
+        //wechatService.wechatLogout(user);//服务器下线
         
         user.setWechatId("");
         user.setUserId("");
