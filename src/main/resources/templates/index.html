@@ -47,16 +47,16 @@
             }
             if (regNum.test($.trim(userName)) == false) {
                 $.toastError("账号不符合规则");
-                return ;
-            }
-            if ($.trim(userPwd).length == 0) {
-                $.toastError("请输入密码");
-                return ;
-            }
-            if (regPwd.test($.trim(userPwd)) == false) {
-                $.toastError("密码不符合规则");
-                return ;
-            }
+            return ;
+        }
+        if ($.trim(userPwd).length == 0) {
+            $.toastError("请输入密码");
+            return ;
+        }
+        if (regPwd.test($.trim(userPwd)) == false) {
+            $.toastError("密码不符合规则");
+            return ;
+        }
             
             $.apiPost('/user/login', {
                 userName: userName,
