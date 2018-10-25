@@ -39,7 +39,7 @@ public class HomeController extends BaseController {
             
     @Autowired private UserMapper userMapper;
     @Autowired private RedPacketMapper redPacketMapper;
-    @Autowired private ReceiveDataController receiveDataController;
+    @Autowired private ReceiveDataControllerDll receiveDataController;
     
     @RequestMapping(value = "/", produces = "text/plain;charset=UTF-8")
     public String interceptor(Model model,HttpSession session) {
