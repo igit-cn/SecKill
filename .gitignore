@@ -47,6 +47,7 @@ local.properties
 
 # Java class files
 *.class
+classes/
 
 # Generated files
 bin/
