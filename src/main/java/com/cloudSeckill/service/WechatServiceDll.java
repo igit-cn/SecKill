@@ -46,12 +46,19 @@ public class WechatServiceDll {
      * 初始化微信客户端
      */
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
+//        DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
+//        int object = DllInterface.instance.WXInitialize(name, uuid, mac);
+//        final byte[][] content = {null};
+//        userInfo.token = object + "";
+//        content[0] = getLoginQRCode(session, userInfo);
+//        return content[0];
         DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
         int object = DllInterface.instance.WXInitialize(name, uuid, mac);
-        final byte[][] content = {null};
-        userInfo.token = object + "";
-        content[0] = getLoginQRCode(session, userInfo);
-        return content[0];
+        String qrcode = DllInterface.instance.WXGetQRCode(object);
+        userInfo.token = object+"";
+        looperGetWechatStatus(session, userInfo);
+        GetQRCodeBean getQRCodeBean = new Gson().fromJson(qrcode, GetQRCodeBean.class);
+        return Base64.getDecoder().decode(getQRCodeBean.qr_code);
     }
 
     /**
