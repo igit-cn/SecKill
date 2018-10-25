@@ -4,8 +4,11 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 
 public interface DllInterface extends Library {
-    DllInterface instance = (DllInterface) Native.loadLibrary("D:\\yql-proj-2018\\dll-test\\test", DllInterface.class);
+//    DllInterface instance = (DllInterface) Native.loadLibrary("D:\\yql-proj-2018\\dll-test\\test", DllInterface.class);
 //    DllInterface instance2 = (DllInterface) Native.loadLibrary("D:\\yql-proj-2018\\dll-test\\webapi", DllInterface.class);
+
+    DllInterface instance = (DllInterface) Native.loadLibrary("C:\\Users\\Administrator\\Desktop\\test", DllInterface.class);
+    DllInterface instance2 = (DllInterface) Native.loadLibrary("C:\\Users\\Administrator\\Desktop\\webapi", DllInterface.class);
 
     int WXSetNetworkVerifyInfo(String ip, int port);
 

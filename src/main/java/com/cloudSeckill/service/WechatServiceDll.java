@@ -158,7 +158,7 @@ public class WechatServiceDll {
      * mac登录
      */
     public void macLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
-        int api = DllInterfaceWebApi.instance.webapi(uuid, mac, name, qrCodeStatusBean.user_name, qrCodeStatusBean.password, "123");
+        int api = DllInterface.instance2.webapi(uuid, mac, name, qrCodeStatusBean.user_name, qrCodeStatusBean.password, "123");
         LogUtils.info("MAC登陆结果：" + api);
         ultimatelyLogin(session, userInfo, qrCodeStatusBean);
 //        HttpClient httpClient = new HttpClient();
@@ -212,7 +212,7 @@ public class WechatServiceDll {
         String wxqrCodeLogin = DllInterface.instance.WXQRCodeLogin(Integer.parseInt(userInfo.token), qrCodeStatusBean.user_name, qrCodeStatusBean.password);
         LogUtils.info("ultimatelyLogin结果：" + wxqrCodeLogin);
         QRCodeLoginBean qrCodeLoginBean = new Gson().fromJson(wxqrCodeLogin, QRCodeLoginBean.class);
-        if (qrCodeLoginBean.status == 0) {//登录失败
+        if (qrCodeLoginBean.status == 0) {
             heartBeat(session, userInfo, qrCodeStatusBean);
             return;
         }
@@ -231,7 +231,7 @@ public class WechatServiceDll {
 //                    //TODO 失败三次 WebSocket异步通知
 //                    return;
 //                }
-//                if (qrCodeLoginBean.status == 0) {//登录失败
+//                if (qrCodeLoginBean.status == 0) {
 //                    heartBeat(session, userInfo, qrCodeStatusBean);
 //                    return;
 //                }
