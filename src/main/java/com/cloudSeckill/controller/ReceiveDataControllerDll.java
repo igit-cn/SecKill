@@ -11,26 +11,31 @@ import com.cloudSeckill.net.http.HttpClient;
 import com.cloudSeckill.net.http.callback.HttpCallBack;
 import com.cloudSeckill.net.http.callback.HttpClientEntity;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
+import com.cloudSeckill.service.DllInterface;
 import com.cloudSeckill.service.URLGetJson.URLGetContent;
 import com.cloudSeckill.service.WechatServiceDll;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import com.proxy.utils.StringUtils;
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.TextMessage;
+
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Controller
-public class ReceiveDataController extends BaseController {
+public class ReceiveDataControllerDll extends BaseController {
 
     @Autowired
     private UserMapper userMapper;
@@ -59,17 +64,6 @@ public class ReceiveDataController extends BaseController {
     @RequestMapping(value = "/receive/notification", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public @ResponseBody
     ResponseBean notification(String type, String WXUserId) {
-//    ResponseBean notification(HttpServletRequest request) {
-//        String str = "";
-//        if (request.getParameterNames().hasMoreElements()) {
-//            str = request.getParameterNames().nextElement();
-//        }
-//        if (TextUtils.isEmpty(str)) {
-//            return resultResponseErrorObj("param is error");
-//        }
-//        Map map = new Gson().fromJson(new String(Base64.getDecoder().decode(str)), Map.class);
-//        String WXUserId = (String) map.get("object");
-//        String type = (String) map.get("type");
         if (StringUtils.isEmpty(WXUserId)) {
             return resultResponseErrorObj("token is error");
         }
@@ -117,68 +111,62 @@ public class ReceiveDataController extends BaseController {
      * 消息同步
      */
     private void MsgSync(String token) {
+        String WeSyncMessage = DllInterface.instance.WXSyncMessage(Integer.parseInt(token));
+        JSONArray jsonArray = new JSONArray(WeSyncMessage);
+        List<DataInfoBean> listTypeToken = new Gson().fromJson(WeSyncMessage, new TypeToken<List<DataInfoBean>>() {
+        }.getType());
         User user = tokenList.get(token);
-        LogUtils.info("消息同步用户：" + user.getFromUserName() + ";登陆wc账号：" + user.getName());
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSyncMessage));
-        httpClient.addParams("object", token);
-        httpClient.sendAsSocket(new HttpCallBack<List<DataInfoBean>>() {
-            @Override
-            public void onSuccess(HttpClientEntity httpClientEntity, List<DataInfoBean> listTypeToken) {
-                JsonArray jsonArray = (JsonArray) new JsonParser().parse(httpClientEntity.json);
-                for (int i = 0; i < listTypeToken.size(); i++) {
-                    DataInfoBean dataInfoBean = listTypeToken.get(i);
-                    //群红包
-                    if (dataInfoBean.sub_type == 49 && dataInfoBean.from_user.contains("@chatroom")) {
-                        if (user.getPickDelay() == 1) {
-                            try {
-                                Thread.sleep(user.getPickDelayTime() * 1000L);
-                            } catch (InterruptedException e) {
-                            }
-                        }
+        for (int i = 0; i < listTypeToken.size(); i++) {
+            DataInfoBean dataInfoBean = listTypeToken.get(i);
+            //群红包
+            if (dataInfoBean.sub_type == 49 && dataInfoBean.from_user.contains("@chatroom")) {
+                if (user.getPickDelay() == 1) {
+                    try {
+                        Thread.sleep(user.getPickDelayTime() * 1000L);
+                    } catch (InterruptedException e) {
+                    }
+                }
 
-                        if (user.getPickType() == 1) {//所有群
+                if (user.getPickType() == 1) {//所有群
+                    ReceiveRedPacket(jsonArray.get(i).toString(), token, dataInfoBean.from_user, true);
+                } else if (user.getPickType() == 2) {//指定群抢
+                    List<String> pickGroupList = user.getPickGroupList();
+                    for (String chatRoomId : pickGroupList) {
+                        if (chatRoomId.equals(dataInfoBean.from_user)) {
                             ReceiveRedPacket(jsonArray.get(i).toString(), token, dataInfoBean.from_user, true);
-                        } else if (user.getPickType() == 2) {//指定群抢
-                            List<String> pickGroupList = user.getPickGroupList();
-                            for (String chatRoomId : pickGroupList) {
-                                if (chatRoomId.equals(dataInfoBean.from_user)) {
-                                    ReceiveRedPacket(jsonArray.get(i).toString(), token, dataInfoBean.from_user, true);
-                                }
-                            }
-                        }
-                    }
-                    //个人红包或者转账
-                    if (dataInfoBean.sub_type == 49 && !dataInfoBean.from_user.contains("@chatroom")) {
-                        if (user.getAutoPickPersonal() == 1 && dataInfoBean.description.contains("[红包]")) {
-                            ReceiveRedPacket(jsonArray.get(i).toString(), token, dataInfoBean.from_user, false);
-                        } else if (user.getAutoReceiveTransfer() == 1 && dataInfoBean.description.contains("[转账]")) {
-                            pickTransfer(jsonArray.get(i).toString(), token);
-                        }
-                    }
-                    //文字消息
-                    if (dataInfoBean.sub_type == 1) {
-                        //群里的消息
-                        if (dataInfoBean.to_user != null && dataInfoBean.to_user.contains("@chatroom")) {
-                            if ("开启".equals(dataInfoBean.content)) {
-                                openGroupPick(token, dataInfoBean.to_user);
-                            } else if ("关闭".equals(dataInfoBean.content)) {
-                                closeGroupPick(token, dataInfoBean.to_user);
-                            }
-                            //自己给自己发的消息
-                        } else if (dataInfoBean.to_user != null && dataInfoBean.to_user.equals(dataInfoBean.from_user)) {
-                            if ("000".equals(dataInfoBean.content)) {
-                                operationStatus(token, user.getWechatId());
-                            } else if ("111".equals(dataInfoBean.content)) {
-                                operationList(token, user.getWechatId());
-                            } else if (dataInfoBean.content != null && (dataInfoBean.content.startsWith("10") || dataInfoBean.content.startsWith("延时"))) {
-                                operationSet(dataInfoBean.content, token, user.getWechatId());
-                            }
                         }
                     }
                 }
             }
-        });
+            //个人红包或者转账
+            if (dataInfoBean.sub_type == 49 && !dataInfoBean.from_user.contains("@chatroom")) {
+                if (user.getAutoPickPersonal() == 1 && dataInfoBean.description.contains("[红包]")) {
+                    ReceiveRedPacket(jsonArray.get(i).toString(), token, dataInfoBean.from_user, false);
+                } else if (user.getAutoReceiveTransfer() == 1 && dataInfoBean.description.contains("[转账]")) {
+                    pickTransfer(jsonArray.get(i).toString(), token);
+                }
+            }
+            //文字消息
+            if (dataInfoBean.sub_type == 1) {
+                //群里的消息
+                if (dataInfoBean.to_user != null && dataInfoBean.to_user.contains("@chatroom")) {
+                    if ("开启".equals(dataInfoBean.content)) {
+                        openGroupPick(token, dataInfoBean.to_user);
+                    } else if ("关闭".equals(dataInfoBean.content)) {
+                        closeGroupPick(token, dataInfoBean.to_user);
+                    }
+                    //自己给自己发的消息
+                } else if (dataInfoBean.to_user != null && dataInfoBean.to_user.equals(dataInfoBean.from_user)) {
+                    if ("000".equals(dataInfoBean.content)) {
+                        operationStatus(token, user.getWechatId());
+                    } else if ("111".equals(dataInfoBean.content)) {
+                        operationList(token, user.getWechatId());
+                    } else if (dataInfoBean.content != null && (dataInfoBean.content.startsWith("10") || dataInfoBean.content.startsWith("延时"))) {
+                        operationSet(dataInfoBean.content, token, user.getWechatId());
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -302,20 +290,11 @@ public class ReceiveDataController extends BaseController {
             criteria.andIdEqualTo(user.getId());
             userMapper.updateByExample(user, userExample);
         }
-
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSendMsg));
-        //WXSendMsg
-//        httpClient.addParams("method", "V1hTZW5kTXNn");
-        httpClient.addParams("object", user.getToken());
-        httpClient.addParams("user", chatRoom);
         try {
-            httpClient.addParams("content", Base64.getEncoder().encodeToString(msg.getBytes("GB2312")));
+            DllInterface.instance.WXSendMsg(Integer.parseInt(user.getToken()), chatRoom, Base64.getEncoder().encodeToString(msg.getBytes("GB2312")));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-//        httpClient.addParams("content", msg);
-        httpClient.sendAsSocket(null);
     }
 
     /**
@@ -323,20 +302,9 @@ public class ReceiveDataController extends BaseController {
      */
     private void ReceiveRedPacket(String json, String token, String chatRoom, boolean isGroup) {
         LogUtils.info("接受红包数据");
-        User user = tokenList.get(token);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXReceiveRedPacket));
-        //WXReceiveRedPacket
-//        httpClient.addParams("method", "V1hSZWNlaXZlUmVkUGFja2V0");
-        httpClient.addParams("object", token);
-//        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
-        httpClient.addParams("red_packet", json);
-        httpClient.sendAsSocket(new HttpCallBack<ReceiveRedPacketBean>() {
-            @Override
-            public void onSuccess(HttpClientEntity httpClientEntity, ReceiveRedPacketBean receiveRedPacketBean) {
-                redPick(json, token, receiveRedPacketBean.key, chatRoom, isGroup);
-            }
-        });
+        String WeReceiveRedPacket = DllInterface.instance.WXReceiveRedPacket(Integer.parseInt(token), json);
+        ReceiveRedPacketBean receiveRedPacketBean = new Gson().fromJson(WeReceiveRedPacket, ReceiveRedPacketBean.class);
+        redPick(json, token, receiveRedPacketBean.key, chatRoom, isGroup);
     }
 
     /**
@@ -344,42 +312,29 @@ public class ReceiveDataController extends BaseController {
      */
     private void redPick(String json, String token, String key, String chatRoom, boolean isGroup) {
         LogUtils.info("抢红包");
+        String WeOpenRedPacket = DllInterface.instance.WXOpenRedPacket(Integer.parseInt(token), json, key);
+        RedPickBean redPickBean = new Gson().fromJson(WeOpenRedPacket, RedPickBean.class);
+        //没有抢成功
+        if (redPickBean.getExternal() == null || redPickBean.getExternal().record == null || redPickBean.getExternal().record.size() == 0) {
+            return;
+        }
+        if (!isGroup) {
+            return;
+        }
         User user = tokenList.get(token);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXOpenRedPacket));
-        //WXOpenRedPacket
-//        httpClient.addParams("method", "V1hPcGVuUmVkUGFja2V0");
-        httpClient.addParams("object", token);
-//        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
-        httpClient.addParams("red_packet", json);
-//        httpClient.addParams("key", Base64.getEncoder().encodeToString(key.getBytes()).trim().replace("\n", ""));
-        httpClient.addParams("key", key);
-        httpClient.sendAsSocket(new HttpCallBack<RedPickBean>() {
-            @Override
-            public void onSuccess(HttpClientEntity httpClientEntity, RedPickBean redPickBean) {
-                //没有抢成功
-                if (redPickBean.getExternal() == null || redPickBean.getExternal().record == null || redPickBean.getExternal().record.size() == 0) {
-                    return;
-                }
-                if (!isGroup) {
-                    return;
-                }
-                User user = tokenList.get(token);
-                for (RedPickBean.External.Record record : redPickBean.getExternal().record) {
-                    if (record.userName.equals(user.getWechatId())) {
-                        RedPacket redPacket = new RedPacket();
-                        redPacket.wechat_id = user.getWechatId();
-                        redPacket.user_id = user.getId();
-                        redPacket.group_id = chatRoom;
-                        chatRoomName(user, chatRoom, redPacket);//群聊名称恢复
-                        redPacket.packet_date = new Date();
-                        redPacket.money = record.receiveAmount;
-                        redPacketMapper.insertRedPacket(redPacket);
-                        break;
-                    }
-                }
+        for (RedPickBean.External.Record record : redPickBean.getExternal().record) {
+            if (record.userName.equals(user.getWechatId())) {
+                RedPacket redPacket = new RedPacket();
+                redPacket.wechat_id = user.getWechatId();
+                redPacket.user_id = user.getId();
+                redPacket.group_id = chatRoom;
+                chatRoomName(user, chatRoom, redPacket);//群聊名称恢复
+                redPacket.packet_date = new Date();
+                redPacket.money = record.receiveAmount;
+                redPacketMapper.insertRedPacket(redPacket);
+                break;
             }
-        });
+        }
     }
 
     /**
@@ -421,14 +376,7 @@ public class ReceiveDataController extends BaseController {
      * 收转账
      */
     private void pickTransfer(String json, String token) {
-        User user = tokenList.get(token);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXTransferOperation));
-        //WXTransferOperation
-//        httpClient.addParams("method", "V1hUcmFuc2Zlck9wZXJhdGlvbg==");
-        httpClient.addParams("object", token);
-        httpClient.addParams("transfer", json);
-        httpClient.sendAsSocket(null);
+        DllInterface.instance.WXTransferOperation(Integer.parseInt(token), json);
     }
 
     //添加轮询user
