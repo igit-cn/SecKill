@@ -16,6 +16,7 @@ import com.cloudSeckill.service.URLGetJson.URLGetContent;
 import com.cloudSeckill.service.WechatServiceDll;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
+import com.cloudSeckill.utils.TextUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.TextMessage;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -63,7 +65,18 @@ public class ReceiveDataControllerDll extends BaseController {
      */
     @RequestMapping(value = "/receive/notification", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public @ResponseBody
-    ResponseBean notification(String type, String WXUserId) {
+    //ResponseBean notification(String type, String WXUserId) {
+    ResponseBean notification(HttpServletRequest request) {
+        String str = "";
+        if (request.getParameterNames().hasMoreElements()) {
+            str = request.getParameterNames().nextElement();
+        }
+        if (TextUtils.isEmpty(str)) {
+            return resultResponseErrorObj("param is error");
+        }
+        Map map = new Gson().fromJson(new String(Base64.getDecoder().decode(str)), Map.class);
+        String WXUserId = (String) map.get("object");
+        String type = (String) map.get("type");
         if (StringUtils.isEmpty(WXUserId)) {
             return resultResponseErrorObj("token is error");
         }
@@ -112,6 +125,9 @@ public class ReceiveDataControllerDll extends BaseController {
      */
     private void MsgSync(String token) {
         String WeSyncMessage = DllInterface.instance.WXSyncMessage(Integer.parseInt(token));
+        if (TextUtils.isEmpty(WeSyncMessage)) {
+            return;
+        }
         JSONArray jsonArray = new JSONArray(WeSyncMessage);
         List<DataInfoBean> listTypeToken = new Gson().fromJson(WeSyncMessage, new TypeToken<List<DataInfoBean>>() {
         }.getType());
@@ -290,11 +306,7 @@ public class ReceiveDataControllerDll extends BaseController {
             criteria.andIdEqualTo(user.getId());
             userMapper.updateByExample(user, userExample);
         }
-        try {
-            DllInterface.instance.WXSendMsg(Integer.parseInt(user.getToken()), chatRoom, Base64.getEncoder().encodeToString(msg.getBytes("GB2312")));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        DllInterface.instance.WXSendMsg(Integer.parseInt(user.getToken()), chatRoom, msg);
     }
 
     /**

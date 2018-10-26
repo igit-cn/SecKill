@@ -4,18 +4,17 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 
 public interface DllInterface extends Library {
-//    DllInterface instance = (DllInterface) Native.loadLibrary("D:\\yql-proj-2018\\dll-test\\test", DllInterface.class);
-//    DllInterface instance2 = (DllInterface) Native.loadLibrary("D:\\yql-proj-2018\\dll-test\\webapi", DllInterface.class);
+    //DllInterface instance = (DllInterface) Native.loadLibrary("D:\\yql-proj-2018\\dll-test\\test", DllInterface.class);
+    //DllInterface instance2 = (DllInterface) Native.loadLibrary("D:\\yql-proj-2018\\dll-test\\webapi", DllInterface.class);
 
     DllInterface instance = (DllInterface) Native.loadLibrary("C:\\Users\\Administrator\\Desktop\\test", DllInterface.class);
     DllInterface instance2 = (DllInterface) Native.loadLibrary("C:\\Users\\Administrator\\Desktop\\webapi", DllInterface.class);
-    int webapi(String UUID, String MAC, String name, String UserName, String Password, String data62);
-    int WXSetNetworkVerifyInfo(String ip, int port);
+    void webapi(String ip,String port,String UUID, String MAC, String name, String UserName, String Password, String data62);
     //DLL授权，项目第一次启动的时候调用
-    boolean WXInitialize(String Ip, int Port);
+    int WXSetNetworkVerifyInfo(String ip, int port);
 
     //微信初始化，返回指针
-    int WXInitialize(String name, String uuid, String mac);
+    String WXInitialize(String name, String mac, String uuid);
 
     //获取二维码
     String WXGetQRCode(int object);
@@ -51,6 +50,6 @@ public interface DllInterface extends Library {
     String WXTransferOperation(int object, String transfer);
 
     //设置消息回调的地址
-    String WXSetRecvMsgCallBack(int object, String url);
+    void WXSetRecvMsgCallBack(int object, String url);
 
 }

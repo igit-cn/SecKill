@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Controller
+//@Controller
 public class ReceiveDataController extends BaseController {
 
     @Autowired
