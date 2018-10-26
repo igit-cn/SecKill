@@ -51,12 +51,16 @@ public class WechatServiceDll {
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
         //DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
         int object = Integer.parseInt(DllInterface.instance.WXInitialize(name, uuid2, uuid));
-        LogUtils.info("初始化uuid：" + uuid);
-        LogUtils.info("初始化mac：" + mac);
-        LogUtils.info("初始化name：" + name);
+//        LogUtils.info("初始化uuid：" + uuid);
+//        LogUtils.info("初始化mac：" + mac);
+//        LogUtils.info("初始化name：" + name);
         final byte[][] content = {null};
         userInfo.token = object + "";
         content[0] = getLoginQRCode(session, userInfo);
+        //重复尝试一次
+        if (null == content[0]) {
+            content[0] = getLoginQRCode(session, userInfo);
+        }
         return content[0];
         /*DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
         int object = Integer.parseInt(DllInterface.instance.WXInitialize(name, uuid, mac));
@@ -73,8 +77,10 @@ public class WechatServiceDll {
     private byte[] getLoginQRCode(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
         String QRString = DllInterface.instance.WXGetQRCode(Integer.parseInt(userInfo.token));
-        content[0] = Base64.getDecoder().decode((String) JSONObject.fromObject(QRString).get("qr_code"));
-        looperGetWechatStatus(session, userInfo);//直接开轮询
+        if (!TextUtils.isEmpty(QRString)) {
+            content[0] = Base64.getDecoder().decode((String) JSONObject.fromObject(QRString).get("qr_code"));
+            looperGetWechatStatus(session, userInfo);//直接开轮询
+        }
         return content[0];
     }
 
@@ -227,7 +233,7 @@ public class WechatServiceDll {
         List<SyncContactBean> syncContactBeen = new Gson().fromJson(WeSyncContact, new TypeToken<List<SyncContactBean>>() {
         }.getType());
         if (syncContactBeen.size() != 0 && syncContactBeen.get(0).isContinue != 0) {
-            for (int i = 0; i < syncContactBeen.size();i++) {
+            for (int i = 0; i < syncContactBeen.size(); i++) {
                 if (syncContactBeen.get(i).member_count != 0) {
                     chainList.add(syncContactBeen.get(i));
                 }

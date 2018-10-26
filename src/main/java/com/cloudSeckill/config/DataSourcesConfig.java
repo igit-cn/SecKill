@@ -4,8 +4,6 @@ import com.alibaba.druid.pool.DruidDataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -33,7 +31,7 @@ public class DataSourcesConfig {
     @Value("${spring.datasource.max-wait:1000}")
     private Long dataSourceMaxWait;
 
-    @Value("${spring.datasource.initial-size:5}")
+    @Value("${spring.datasource.initial-size:10}")
     private Integer initialSize;
 
     @Bean(name = "payDataSource")
@@ -45,7 +43,7 @@ public class DataSourcesConfig {
         dataSource.setPassword(dbPassword);
         dataSource.setMinIdle(dataSourceMinIdle);
         dataSource.setMaxWait(dataSourceMaxWait);
-        dataSource.setMaxIdle(dataSourceMaxIdle);
+//        dataSource.setMaxIdle(dataSourceMaxIdle);
         dataSource.setInitialSize(initialSize);
         dataSource.setMaxActive(dataSourceMaxIdle);
         return dataSource;
