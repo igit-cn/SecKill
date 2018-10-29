@@ -258,7 +258,7 @@ public class WechatServiceDll {
      */
     public void wechatLogout(User user) {
         LogUtils.info("WXUserLogout开始：" + user.getToken());
-        String WeUserLogout = DllInterface.instance.WXUserLogout(Integer.parseInt(user.getToken()));
+        String WeUserLogout = DllInterface.instance.WXLogout(Integer.parseInt(user.getToken()));
         LogUtils.info("WXUserLogout结束：" + WeUserLogout);
         HearBeatBean hearBeatBean = new Gson().fromJson(WeUserLogout, HearBeatBean.class);
         System.out.println(hearBeatBean.status);

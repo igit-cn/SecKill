@@ -55,4 +55,7 @@ public interface DllInterface extends Library {
     //释放没用的指针
     void WXRelease(int object);
 
+    //注销账号
+    String WXLogout(int object);
+
 }
