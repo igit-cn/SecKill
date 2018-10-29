@@ -51,9 +51,9 @@ public class WechatServiceDll {
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
         //DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
         int object = Integer.parseInt(DllInterface.instance.WXInitialize(name, uuid2, uuid));
-//        LogUtils.info("初始化uuid：" + uuid);
-//        LogUtils.info("初始化mac：" + mac);
-//        LogUtils.info("初始化name：" + name);
+        LogUtils.info("初始化uuid：" + uuid);
+        LogUtils.info("初始化mac：" + mac);
+        LogUtils.info("初始化name：" + name);
         final byte[][] content = {null};
         userInfo.token = object + "";
         content[0] = getLoginQRCode(session, userInfo);
@@ -233,7 +233,7 @@ public class WechatServiceDll {
         List<SyncContactBean> syncContactBeen = new Gson().fromJson(WeSyncContact, new TypeToken<List<SyncContactBean>>() {
         }.getType());
         if (syncContactBeen.size() != 0 && syncContactBeen.get(0).isContinue != 0) {
-            for (int i = 0; i < syncContactBeen.size(); i++) {
+            for (int i = 0; i < syncContactBeen.size();i++) {
                 if (syncContactBeen.get(i).member_count != 0) {
                     chainList.add(syncContactBeen.get(i));
                 }

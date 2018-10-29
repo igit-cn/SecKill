@@ -26,9 +26,18 @@ public class Test {
         DllInterface.instance1.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
         String object = DllInterface.instance1.WXInitialize(name, Utils.getRandomUUID(), Utils.getRandomMac());
         String qrString = DllInterface.instance1.WXGetQRCode(Integer.parseInt(object));
-        String qrStatus1 = DllInterface.instance1.WXCheckQRCode(Integer.parseInt(object));
-        String qrStatus2 = DllInterface.instance1.WXCheckQRCode(Integer.parseInt(object));
-        int a = DllInterface.instance2.webapi(Utils.getRandomUUID(), Utils.getRandomMac(), name, "wxid_23sdae2323", "asdasdasdasdasdasd", "123");
-        System.out.println(a);
+
+        String qrStatusBefore = DllInterface.instance1.WXCheckQRCode(Integer.parseInt(object));
+        System.out.println("检查二维码状态-----qrStatusBefore" + qrStatusBefore);
+        DllInterface.instance1.WXRelease(Integer.parseInt(object));
+        String qrStatusAfter = DllInterface.instance1.WXCheckQRCode(Integer.parseInt(object));
+        System.out.println("检查二维码状态-----qrStatusAfter" + qrStatusAfter);
+
+//        String object = DllInterface.instance1.WXInitialize(name, Utils.getRandomUUID(), Utils.getRandomMac());
+//        String qrString = DllInterface.instance1.WXGetQRCode(Integer.parseInt(object));
+//        String qrStatus1 = DllInterface.instance1.WXCheckQRCode(Integer.parseInt(object));
+//        String qrStatus2 = DllInterface.instance1.WXCheckQRCode(Integer.parseInt(object));
+//        int a = DllInterface.instance2.webapi(Utils.getRandomUUID(), Utils.getRandomMac(), name, "wxid_23sdae2323", "asdasdasdasdasdasd", "123");
+//        System.out.println(a);
     }
 }
