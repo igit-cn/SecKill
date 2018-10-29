@@ -40,8 +40,8 @@ public class WechatServiceDll {
     private RedisUtil redisUtil;
 
     String name = "hahahaipad";
-    String mac = "00:22:5F:5F:03:27";
-    String uuid = "002IEYVG-6000-K820-28G6-M80H64RWQSUQ";
+    String mac = Utils.getRandomMac();
+    String uuid = Utils.getRandomUUID();
     String uuid2 = "<softtype><k3>9.0.2</k3><k9>iPad</k9><k10>2</k10><k19>58BF17B5-2D8E-4BFB-A97E-38F1226F13F8</k19><k20>" + uuid
             + "</k20><k21>neihe_5GHz</k21><k22>(null)</k22><k24>" + mac + "</k24><k33>\\345\\276\\256\\344\\277\\241</k33><k47>1</k47><k50>1</k50><k51>com.tencent.xin</k51><k54>iPad4,4</k54></softtype>";
 
@@ -77,7 +77,7 @@ public class WechatServiceDll {
         final byte[][] content = {null};
         LogUtils.info("WXGetQRCode开始" + userInfo.token);
         String QRString = DllInterface.instance.WXGetQRCode(Integer.parseInt(userInfo.token));
-        LogUtils.info("WXInitialize结束,返回二维码：" + QRString);
+        LogUtils.info("WXGetQRCode结束,返回二维码：" + QRString);
         if (!TextUtils.isEmpty(QRString)) {
             content[0] = Base64.getDecoder().decode((String) JSONObject.fromObject(QRString).get("qr_code"));
             looperGetWechatStatus(session, userInfo);//直接开轮询
@@ -136,27 +136,6 @@ public class WechatServiceDll {
         LogUtils.info("webapi结束");
     }
 
-    /**
-     * mac登录
-     */
-    public void macLoginHttp(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl("http://47.92.166.84:2223/webapi");
-        httpClient.addParams("name", name);
-        httpClient.addParams("mac", mac);
-        httpClient.addParams("uuid", uuid);
-        httpClient.addParams("user", qrCodeStatusBean.user_name);
-        httpClient.addParams("password", qrCodeStatusBean.password);
-        httpClient.addParams("data62", "123");
-        httpClient.sendAsJson(new HttpCallBack<Object>() {
-            @Override
-            public void onSuccess(HttpClientEntity httpClientEntity, Object o) {
-                LogUtils.info("MAC登陆结果：" + httpClientEntity.json);
-                ultimatelyLogin(session, userInfo, qrCodeStatusBean);
-            }
-        });
-
-    }
 
     /**
      * 最终登录

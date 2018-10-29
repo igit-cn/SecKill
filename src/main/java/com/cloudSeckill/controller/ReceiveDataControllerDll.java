@@ -330,6 +330,9 @@ public class ReceiveDataControllerDll extends BaseController {
         LogUtils.info("WXOpenRedPacket开始：" + token + ":" + json + ":" + key);
         String WeOpenRedPacket = DllInterface.instance.WXOpenRedPacket(Integer.parseInt(token), json, key);
         LogUtils.info("WeOpenRedPacket结束" + WeOpenRedPacket);
+        if(StringUtils.isEmpty(WeOpenRedPacket)){
+            return;
+        }
         RedPickBean redPickBean = new Gson().fromJson(WeOpenRedPacket, RedPickBean.class);
         //没有抢成功
         if (redPickBean.getExternal() == null || redPickBean.getExternal().record == null || redPickBean.getExternal().record.size() == 0) {
