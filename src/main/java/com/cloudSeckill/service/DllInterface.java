@@ -13,7 +13,7 @@ public interface DllInterface extends Library {
     //DLL授权，项目第一次启动的时候调用
     int WXSetNetworkVerifyInfo(String ip, int port);
 
-    //微信初始化，返回指针
+    //微信初始化，返回object指针
     String WXInitialize(String name, String mac, String uuid);
 
     //获取二维码
@@ -51,5 +51,8 @@ public interface DllInterface extends Library {
 
     //设置消息回调的地址
     void WXSetRecvMsgCallBack(int object, String url);
+
+    //释放没用的指针
+    void WXRelease(int object);
 
 }

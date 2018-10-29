@@ -50,10 +50,9 @@ public class WechatServiceDll {
      */
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
         //DllInterface.instance.WXSetNetworkVerifyInfo("117.50.51.222", 1819);
-        int object = Integer.parseInt(DllInterface.instance.WXInitialize(name, uuid2, uuid));
-//        LogUtils.info("初始化uuid：" + uuid);
-//        LogUtils.info("初始化mac：" + mac);
-//        LogUtils.info("初始化name：" + name);
+        LogUtils.info("WXInitialize开始" + name + uuid2 + uuid);
+        String object = DllInterface.instance.WXInitialize(name, uuid2, uuid);
+        LogUtils.info("WXInitialize结束,返回object：" + object);
         final byte[][] content = {null};
         userInfo.token = object + "";
         content[0] = getLoginQRCode(session, userInfo);
@@ -76,7 +75,9 @@ public class WechatServiceDll {
      */
     private byte[] getLoginQRCode(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
+        LogUtils.info("WXGetQRCode开始" + userInfo.token);
         String QRString = DllInterface.instance.WXGetQRCode(Integer.parseInt(userInfo.token));
+        LogUtils.info("WXInitialize结束,返回二维码：" + QRString);
         if (!TextUtils.isEmpty(QRString)) {
             content[0] = Base64.getDecoder().decode((String) JSONObject.fromObject(QRString).get("qr_code"));
             looperGetWechatStatus(session, userInfo);//直接开轮询
@@ -99,7 +100,9 @@ public class WechatServiceDll {
             public void run() {
                 userInfo.isLooperOpen = true;
                 while (userInfo.isLooperOpen) {
+                    LogUtils.info("WXCheckQRCode开始,object:" + userInfo.token);
                     String wxCheckQRCode = DllInterface.instance.WXCheckQRCode(Integer.parseInt(userInfo.token));
+                    LogUtils.info("WXCheckQRCode结束" + wxCheckQRCode);
                     if (!TextUtils.isEmpty(wxCheckQRCode)) {
                         LogUtils.info(wxCheckQRCode);
                         //{"expired_time":187,"status":0}
@@ -127,8 +130,10 @@ public class WechatServiceDll {
      * mac登录
      */
     public void macLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
+        LogUtils.info("webapi开始" + "117.50.51.222" + "1818" + uuid + mac + name + qrCodeStatusBean.user_name + qrCodeStatusBean.password + "--123");
         DllInterface.instance2.webapi("117.50.51.222", "1818", uuid, mac, name, qrCodeStatusBean.user_name, qrCodeStatusBean.password, "123");
         ultimatelyLogin(session, userInfo, qrCodeStatusBean);
+        LogUtils.info("webapi结束");
     }
 
     /**
@@ -157,8 +162,9 @@ public class WechatServiceDll {
      * 最终登录
      */
     private void ultimatelyLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
+        LogUtils.info("WXQRCodeLogin开始" + userInfo.token + ":" + qrCodeStatusBean.user_name + ":" + qrCodeStatusBean.password);
         String wxqrCodeLogin = DllInterface.instance.WXQRCodeLogin(Integer.parseInt(userInfo.token), qrCodeStatusBean.user_name, qrCodeStatusBean.password);
-        LogUtils.info("ultimatelyLogin结果：" + wxqrCodeLogin);
+        LogUtils.info("WXQRCodeLogin结果：" + wxqrCodeLogin);
         QRCodeLoginBean qrCodeLoginBean = new Gson().fromJson(wxqrCodeLogin, QRCodeLoginBean.class);
         if (qrCodeLoginBean.status == 0) {
             heartBeat(session, userInfo, qrCodeStatusBean);
@@ -171,12 +177,15 @@ public class WechatServiceDll {
      * 心跳
      */
     private void heartBeat(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
+        LogUtils.info("heartBeat开始：" + userInfo.token);
         String wxHeartBeat = DllInterface.instance.WXHeartBeat(Integer.parseInt(userInfo.token));
         LogUtils.info("heartBeat结果：" + wxHeartBeat);
         HearBeatBean hearBeatBean = new Gson().fromJson(wxHeartBeat, HearBeatBean.class);
         if (hearBeatBean.status == 0) {
             //DllInterface.instance.WXSetRecvMsgCallBack(Integer.parseInt(userInfo.token), "http://47.106.107.116:2223/WXInitialize");
+            LogUtils.info("WXSetRecvMsgCallBack开始：" + userInfo.token + ":" + "http://127.0.0.1/receive/notification");
             DllInterface.instance.WXSetRecvMsgCallBack(Integer.parseInt(userInfo.token), "http://127.0.0.1/receive/notification");
+            LogUtils.info("WXSetRecvMsgCallBack结束");
             saveWechatInfo(session, userInfo, qrCodeStatusBean);
             return;
         }
@@ -190,14 +199,22 @@ public class WechatServiceDll {
         //先清理掉同名的微信id绑定关系
         User updateUser = new User();
         updateUser.setWechatId(qrCodeStatusBean.user_name);
+        LogUtils.info("updateByWechatId开始");
         userMapper.updateByWechatId(updateUser);
-
+        LogUtils.info("updateByWechatId结束");
         //保存数据到坑中
+        LogUtils.info("SessionUtils.getCurrentSelectKengId(session)开始");
         int id = SessionUtils.getCurrentSelectKengId(session);
+        LogUtils.info("SessionUtils.getCurrentSelectKengId(session)结束");
         //数据保存Bean中
         UserExample queryExample = new UserExample();
+        LogUtils.info("queryExample.createCriteria().andIdEqualTo(id)开始");
         queryExample.createCriteria().andIdEqualTo(id);
+        LogUtils.info("queryExample.createCriteria().andIdEqualTo(id)结束");
+
+        LogUtils.info("userMapper.selectByExample(queryExample)开始");
         List<User> queryUserList = userMapper.selectByExample(queryExample);
+        LogUtils.info("userMapper.selectByExample(queryExample)结束");
         User user = queryUserList.get(0);
         user.setWechatId(qrCodeStatusBean.user_name);
         user.setUserId(qrCodeStatusBean.user_name);
@@ -206,21 +223,34 @@ public class WechatServiceDll {
         user.setOnlineStatus(1);
         user.setToken(userInfo.token);
         //TODO 此处保存IP到数据库
+        LogUtils.info("userMapper.updateByExample(user, queryExample)此处保存IP到数据库开始");
         userMapper.updateByExample(user, queryExample);
+        LogUtils.info("userMapper.updateByExample(user, queryExample)此处保存IP到数据库结束");
         //绑定坑id与请求服务器的地址
+        LogUtils.info("绑定坑id与请求服务器的地址开始");
         redisUtil.set("keng_id-" + user.getId(), userInfo.ipAddress);
+        LogUtils.info("绑定坑id与请求服务器的地址结束");
         //微信信息绑定,推送前端结果
+        LogUtils.info("微信信息绑定,推送前端结果开始");
         wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("wechatLoginSuccess"));
+        LogUtils.info("微信信息绑定,推送前端结果结束");
         //登录成功之后token绑定微信id
+        LogUtils.info("登录成功之后token绑定微信id开始");
         receiveDataController.addToken(user);
+        LogUtils.info("登录成功之后token绑定微信id结束");
         //发送初始化通知
+        LogUtils.info("发送初始化通知开始");
         receiveDataController.initNotification(user.getToken(), user.getWechatId());
-
+        LogUtils.info("发送初始化通知结束");
         //同步通讯录
+        LogUtils.info("同步通讯录开始");
         List<SyncContactBean> chainList = new ArrayList();
         syncContact(user, chainList);
-        redisUtil.set(qrCodeStatusBean.user_name, chainList);
+        LogUtils.info("同步通讯录结束");
 
+        LogUtils.info("redisUtil.set(qrCodeStatusBean.user_name, chainList)开始");
+        redisUtil.set(qrCodeStatusBean.user_name, chainList);
+        LogUtils.info("redisUtil.set(qrCodeStatusBean.user_name, chainList)结束");
 
         LogUtils.info("用户 : " + user.getName() + " 扫码登录成功 来自账号 : " + user.getFromUserName());
     }
@@ -229,7 +259,9 @@ public class WechatServiceDll {
      * 同步通讯录
      */
     public void syncContact(User user, List<SyncContactBean> chainList) {
+        LogUtils.info("WXSyncContact开始：" + user.getToken());
         String WeSyncContact = DllInterface.instance.WXSyncContact(Integer.parseInt(user.getToken()));
+        LogUtils.info("WXSyncContact结束：" + WeSyncContact);
         List<SyncContactBean> syncContactBeen = new Gson().fromJson(WeSyncContact, new TypeToken<List<SyncContactBean>>() {
         }.getType());
         if (syncContactBeen.size() != 0 && syncContactBeen.get(0).isContinue != 0) {
@@ -246,7 +278,9 @@ public class WechatServiceDll {
      * 退出登录
      */
     public void wechatLogout(User user) {
+        LogUtils.info("WXUserLogout开始：" + user.getToken());
         String WeUserLogout = DllInterface.instance.WXUserLogout(Integer.parseInt(user.getToken()));
+        LogUtils.info("WXUserLogout结束：" + WeUserLogout);
         HearBeatBean hearBeatBean = new Gson().fromJson(WeUserLogout, HearBeatBean.class);
         System.out.println(hearBeatBean.status);
     }
