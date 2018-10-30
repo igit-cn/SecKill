@@ -23,7 +23,10 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +36,39 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RedisConfig extends CachingConfigurerSupport {
     @Value("${spring.redis.host}")
     public String redisHost;
+
+//    @Value("${spring.redis.port:6379}")
+//    public String redisPort;
+//
+//    @Value("${spring.redis.password:}")
+//    public String password;
+//
+//    @Value("${spring.redis.pool.max-idle}")
+//    public int maxIdle;
+//
+//    @Value("${spring.redis.pool.min-idle}")
+//    public int minIdle;
+//
+//    private JedisPool jedisPool;
+//
+//    @PostConstruct
+//    public void redisiInitial() {
+//        // 池基本配置
+//        JedisPoolConfig config = new JedisPoolConfig();
+//        config.setMaxIdle(maxIdle);
+//        config.setMinIdle(minIdle);
+//        jedisPool = new JedisPool(config, redisHost, 6379, 3000);
+//    }
+//
+//    @Bean
+//    public Jedis jedis() {
+//        return jedisPool.getResource();
+//    }
+//
+//    @Bean
+//    public JedisPool jedisPool() {
+//        return jedisPool;
+//    }
 
     @Bean
     @Scope("prototype")
@@ -98,7 +134,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         template.afterPropertiesSet();
         return template;
     }
-    
+
     @Bean("channelMap")
     Map<String, List<SseEmitter>> channelMap() {
         return new ConcurrentHashMap<String, List<SseEmitter>>();
