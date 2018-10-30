@@ -1,8 +1,6 @@
 package com.cloudSeckill.config;
 
-import com.cloudSeckill.controller.ReceiveDataControllerDll;
 import com.opslab.util.RandomUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,9 +9,6 @@ import java.util.Map;
 
 @Configuration
 public class IpAddressConfig {
-
-    @Autowired
-    private ReceiveDataControllerDll receiveDataController;
 
     @Value("${three.ip1}")
     private String ip1;

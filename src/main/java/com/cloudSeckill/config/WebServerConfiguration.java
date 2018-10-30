@@ -1,5 +1,6 @@
 package com.cloudSeckill.config;
 
+import com.cloudSeckill.utils.LogUtils;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11Nio2Protocol;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
@@ -8,13 +9,17 @@ import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletCon
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.concurrent.TimeUnit;
+
 @Configuration
 public class WebServerConfiguration {
     @Bean
     public EmbeddedServletContainerFactory createEmbeddedServletContainerFactory() {
+        LogUtils.info("Tomcat服务器自定义配置");
         TomcatEmbeddedServletContainerFactory tomcatFactory = new TomcatEmbeddedServletContainerFactory();
         tomcatFactory.setPort(80);
         tomcatFactory.setProtocol("org.apache.coyote.http11.Http11Nio2Protocol");
+        tomcatFactory.setSessionTimeout(30, TimeUnit.MINUTES);
         tomcatFactory.addConnectorCustomizers(new MyTomcatConnectorCustomizer());
         return tomcatFactory;
     }

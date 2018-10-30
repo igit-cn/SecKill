@@ -62,19 +62,21 @@ public class LogUtils {
     }
 
     public static void errorLogout(Object obj) {
-        try {
-            errorlog.error(new String(obj.toString().getBytes("GBK"), Charset.defaultCharset()));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        errorlog.error(obj.toString());
+//        try {
+//            errorlog.error(new String(obj.toString().getBytes("GBK"), Charset.defaultCharset()));
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public static void infoLogout(Object obj) {
-        try {
-            infolog.info(new String(obj.toString().getBytes("GBK"), Charset.defaultCharset()));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        infolog.info(obj.toString());
+//        try {
+//            infolog.info(new String(obj.toString().getBytes("GBK"), Charset.defaultCharset()));
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
     }
 
 }

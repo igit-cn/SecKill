@@ -8,6 +8,7 @@ import com.cloudSeckill.data.info.UserInfo;
 import com.cloudSeckill.data.request.WechatLogoutRequest;
 import com.cloudSeckill.data.response.ResponseBean;
 import com.cloudSeckill.service.WechatServiceDll;
+import com.cloudSeckill.service.WechatServiceJson;
 import com.cloudSeckill.utils.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,7 +25,7 @@ import java.io.IOException;
 @Controller
 public class WechatController extends BaseController {
 
-    @Autowired private WechatServiceDll wechatService;
+    @Autowired private WechatServiceJson wechatService;
     @Autowired private UserMapper userMapper;
 
     //获取登录需要的二维码地址

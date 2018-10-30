@@ -24,7 +24,7 @@ import java.util.List;
 public class SettingController extends BaseController {
 
     @Autowired private UserMapper userMapper;
-    @Autowired private ReceiveDataControllerDll receiveDataController;
+    @Autowired private ReceiveDataController receiveDataController;
 
     @RequestMapping(value = "/settings", produces = "text/plain;charset=UTF-8")
     public String interceptor(HttpServletRequest request, HttpSession session) {

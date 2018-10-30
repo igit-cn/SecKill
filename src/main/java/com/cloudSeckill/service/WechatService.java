@@ -1,6 +1,7 @@
 package com.cloudSeckill.service;
 
 import com.cloudSeckill.config.IpAddressConfig;
+import com.cloudSeckill.controller.ReceiveDataController;
 import com.cloudSeckill.controller.ReceiveDataControllerDll;
 import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
@@ -30,7 +31,7 @@ public class WechatService {
     
     @Autowired private IpAddressConfig ipAddressConfig;
     @Autowired private WechatWebSocket wechatWebSocket;
-    @Autowired private ReceiveDataControllerDll receiveDataController;
+    @Autowired private ReceiveDataController receiveDataController;
     @Autowired private UserMapper userMapper;
     @Autowired private RedisUtil redisUtil;
     

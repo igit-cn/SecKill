@@ -35,11 +35,11 @@ public class HomeController extends BaseController {
 
     @Autowired private HomeService homeService;
     @Autowired private UserService userService;
-    @Autowired private WechatServiceDll wechatService;
+    @Autowired private WechatServiceJson wechatService;
             
     @Autowired private UserMapper userMapper;
     @Autowired private RedPacketMapper redPacketMapper;
-    @Autowired private ReceiveDataControllerDll receiveDataController;
+    @Autowired private ReceiveDataController receiveDataController;
     
     @RequestMapping(value = "/", produces = "text/plain;charset=UTF-8")
     public String interceptor(Model model,HttpSession session) {
