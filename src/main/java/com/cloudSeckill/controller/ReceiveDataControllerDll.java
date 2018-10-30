@@ -315,9 +315,7 @@ public class ReceiveDataControllerDll extends BaseController {
      */
     private void ReceiveRedPacket(String json, String token, String chatRoom, boolean isGroup) {
         LogUtils.info("接受红包数据");
-        LogUtils.info("WXReceiveRedPacket开始：" + token + ":" + json);
         String WeReceiveRedPacket = DllInterface.instance.WXReceiveRedPacket(Integer.parseInt(token), json);
-        LogUtils.info("WXReceiveRedPacket结束" + WeReceiveRedPacket);
         ReceiveRedPacketBean receiveRedPacketBean = new Gson().fromJson(WeReceiveRedPacket, ReceiveRedPacketBean.class);
         redPick(json, token, receiveRedPacketBean.key, chatRoom, isGroup);
     }
@@ -327,12 +325,7 @@ public class ReceiveDataControllerDll extends BaseController {
      */
     private void redPick(String json, String token, String key, String chatRoom, boolean isGroup) {
         LogUtils.info("抢红包");
-        LogUtils.info("WXOpenRedPacket开始：" + token + ":" + json + ":" + key);
         String WeOpenRedPacket = DllInterface.instance.WXOpenRedPacket(Integer.parseInt(token), json, key);
-        LogUtils.info("WeOpenRedPacket结束" + WeOpenRedPacket);
-        if(StringUtils.isEmpty(WeOpenRedPacket)){
-            return;
-        }
         RedPickBean redPickBean = new Gson().fromJson(WeOpenRedPacket, RedPickBean.class);
         //没有抢成功
         if (redPickBean.getExternal() == null || redPickBean.getExternal().record == null || redPickBean.getExternal().record.size() == 0) {
@@ -396,9 +389,7 @@ public class ReceiveDataControllerDll extends BaseController {
      * 收转账
      */
     private void pickTransfer(String json, String token) {
-        LogUtils.info("WXTransferOperation开始：" + token + ":" + json);
-        String WXTransferOperation = DllInterface.instance.WXTransferOperation(Integer.parseInt(token), json);
-        LogUtils.info("WXTransferOperation结束：" + WXTransferOperation);
+        DllInterface.instance.WXTransferOperation(Integer.parseInt(token), json);
     }
 
     //添加轮询user
@@ -406,19 +397,6 @@ public class ReceiveDataControllerDll extends BaseController {
         synchronized (this) {
             tokenList.put(user.getToken(), user);
         }
-    }
-
-    //获取tokenMap
-    public String getTokenByUsername(String username) {
-        synchronized (this) {
-            for (String token : tokenList.keySet()) {
-                User user = tokenList.get(token);
-                if (user.getWechatId().equals(username)) {
-                }
-                return token;
-            }
-        }
-        return "";
     }
 
     public void removeToken(String token) {

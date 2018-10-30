@@ -52,10 +52,4 @@ public interface DllInterface extends Library {
     //设置消息回调的地址
     void WXSetRecvMsgCallBack(int object, String url);
 
-    //释放没用的指针
-    void WXRelease(int object);
-
-    //注销账号
-    String WXLogout(int object);
-
 }
