@@ -16,15 +16,20 @@ import com.cloudSeckill.service.WechatServiceDll;
 import com.cloudSeckill.service.WechatServiceJson;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
+import com.cloudSeckill.utils.TextUtils;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.proxy.utils.StringUtils;
+import com.squareup.okhttp.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.TextMessage;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -59,18 +64,18 @@ public class ReceiveDataController extends BaseController {
      */
     @RequestMapping(value = "/receive/notification", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public @ResponseBody
-    ResponseBean notification(String type, String WXUserId) {
-//    ResponseBean notification(HttpServletRequest request) {
-//        String str = "";
-//        if (request.getParameterNames().hasMoreElements()) {
-//            str = request.getParameterNames().nextElement();
-//        }
-//        if (TextUtils.isEmpty(str)) {
-//            return resultResponseErrorObj("param is error");
-//        }
-//        Map map = new Gson().fromJson(new String(Base64.getDecoder().decode(str)), Map.class);
-//        String WXUserId = (String) map.get("object");
-//        String type = (String) map.get("type");
+    //ResponseBean notification(String type, String WXUserId) {
+    ResponseBean notification(HttpServletRequest request) {
+        String str = "";
+        if (request.getParameterNames().hasMoreElements()) {
+            str = request.getParameterNames().nextElement();
+        }
+        if (TextUtils.isEmpty(str)) {
+            return resultResponseErrorObj("param is error");
+        }
+        Map map = new Gson().fromJson(new String(Base64.getDecoder().decode(str)), Map.class);
+        String WXUserId = (String) map.get("object");
+        String type = (String) map.get("type");
         if (StringUtils.isEmpty(WXUserId)) {
             return resultResponseErrorObj("token is error");
         }
@@ -123,7 +128,7 @@ public class ReceiveDataController extends BaseController {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSyncMessage));
         httpClient.addParams("object", token);
-        httpClient.sendAsSocket(new HttpCallBack<List<DataInfoBean>>() {
+        httpClient.sendAsJson(new HttpCallBack<List<DataInfoBean>>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, List<DataInfoBean> listTypeToken) {
                 JsonArray jsonArray = (JsonArray) new JsonParser().parse(httpClientEntity.json);
@@ -311,12 +316,12 @@ public class ReceiveDataController extends BaseController {
         httpClient.addParams("object", user.getToken());
         httpClient.addParams("user", chatRoom);
         try {
-            httpClient.addParams("content", Base64.getEncoder().encodeToString(msg.getBytes("GB2312")));
+            httpClient.addParams("content", Base64.getEncoder().encodeToString(msg.getBytes("utf-8")));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 //        httpClient.addParams("content", msg);
-        httpClient.sendAsSocket(null);
+        httpClient.sendAsJson(null);
     }
 
     /**
@@ -332,7 +337,7 @@ public class ReceiveDataController extends BaseController {
         httpClient.addParams("object", token);
 //        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
         httpClient.addParams("red_packet", json);
-        httpClient.sendAsSocket(new HttpCallBack<ReceiveRedPacketBean>() {
+        httpClient.sendAsJson(new HttpCallBack<ReceiveRedPacketBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, ReceiveRedPacketBean receiveRedPacketBean) {
                 redPick(json, token, receiveRedPacketBean.key, chatRoom, isGroup);
@@ -355,7 +360,7 @@ public class ReceiveDataController extends BaseController {
         httpClient.addParams("red_packet", json);
 //        httpClient.addParams("key", Base64.getEncoder().encodeToString(key.getBytes()).trim().replace("\n", ""));
         httpClient.addParams("key", key);
-        httpClient.sendAsSocket(new HttpCallBack<RedPickBean>() {
+        httpClient.sendAsJson(new HttpCallBack<RedPickBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, RedPickBean redPickBean) {
                 //没有抢成功
@@ -429,7 +434,7 @@ public class ReceiveDataController extends BaseController {
 //        httpClient.addParams("method", "V1hUcmFuc2Zlck9wZXJhdGlvbg==");
         httpClient.addParams("object", token);
         httpClient.addParams("transfer", json);
-        httpClient.sendAsSocket(null);
+        httpClient.sendAsJson(null);
     }
 
     //添加轮询user
