@@ -334,8 +334,8 @@ public class ReceiveDataController extends BaseController {
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXReceiveRedPacket));
         //WXReceiveRedPacket
 //        httpClient.addParams("method", "V1hSZWNlaXZlUmVkUGFja2V0");
-        httpClient.addParams("object", token);
-//        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
+        //httpClient.addParams("object", token);
+      httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
         httpClient.addParams("red_packet", json);
         httpClient.sendAsJson(new HttpCallBack<ReceiveRedPacketBean>() {
             @Override
@@ -356,9 +356,8 @@ public class ReceiveDataController extends BaseController {
         //WXOpenRedPacket
 //        httpClient.addParams("method", "V1hPcGVuUmVkUGFja2V0");
         httpClient.addParams("object", token);
-//        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
-        httpClient.addParams("red_packet", json);
-//        httpClient.addParams("key", Base64.getEncoder().encodeToString(key.getBytes()).trim().replace("\n", ""));
+        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
+ //       httpClient.addParams("red_packet", json);
         httpClient.addParams("key", key);
         httpClient.sendAsJson(new HttpCallBack<RedPickBean>() {
             @Override
