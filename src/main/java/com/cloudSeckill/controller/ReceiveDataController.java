@@ -13,6 +13,7 @@ import com.cloudSeckill.net.http.callback.HttpClientEntity;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
 import com.cloudSeckill.service.URLGetJson.URLGetContent;
 import com.cloudSeckill.service.WechatServiceDll;
+import com.cloudSeckill.service.WechatServiceJson;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
 import com.google.gson.JsonArray;
@@ -29,13 +30,13 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-//@Controller
+@Controller
 public class ReceiveDataController extends BaseController {
 
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private WechatServiceDll wechatServeice;
+    private WechatServiceJson wechatServeice;
     @Autowired
     private RedPacketMapper redPacketMapper;
     @Autowired

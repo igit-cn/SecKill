@@ -1,6 +1,7 @@
 package com.cloudSeckill.service;
 
 import com.cloudSeckill.config.IpAddressConfig;
+import com.cloudSeckill.controller.ReceiveDataController;
 import com.cloudSeckill.controller.ReceiveDataControllerDll;
 import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
@@ -31,7 +32,7 @@ public class WechatServiceJson {
     @Autowired
     private WechatWebSocket wechatWebSocket;
     @Autowired
-    private ReceiveDataControllerDll receiveDataController;
+    private ReceiveDataController receiveDataController;
     @Autowired
     private UserMapper userMapper;
     @Autowired
@@ -262,14 +263,13 @@ public class WechatServiceJson {
         //登录成功之后token绑定微信id
         receiveDataController.addToken(user);
 
+        //发送初始化通知
+        receiveDataController.initNotification(user.getToken(), user.getWechatId());
 
         //同步通讯录
         List<SyncContactBean> chainList = new ArrayList();
         syncContact(user, chainList);
         redisUtil.set(qrCodeStatusBean.user_name, chainList);
-
-        //发送初始化通知
-        receiveDataController.initNotification(user.getToken(), user.getWechatId());
 
         LogUtils.info("用户 : " + user.getName() + " 扫码登录成功 来自账号 : " + user.getFromUserName());
     }

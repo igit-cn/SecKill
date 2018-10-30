@@ -7,42 +7,34 @@ import com.cloudSeckill.dao.domain.UserExample;
 import com.cloudSeckill.dao.mapper.RedPacketMapper;
 import com.cloudSeckill.dao.mapper.UserMapper;
 import com.cloudSeckill.data.response.*;
-import com.cloudSeckill.net.http.HttpClient;
-import com.cloudSeckill.net.http.callback.HttpCallBack;
-import com.cloudSeckill.net.http.callback.HttpClientEntity;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
 import com.cloudSeckill.service.DllInterface;
-import com.cloudSeckill.service.URLGetJson.URLGetContent;
-import com.cloudSeckill.service.WechatServiceDll;
+import com.cloudSeckill.service.WechatServiceJson;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
 import com.cloudSeckill.utils.TextUtils;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.proxy.utils.StringUtils;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.TextMessage;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Controller
+//@Controller
 public class ReceiveDataControllerDll extends BaseController {
 
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private WechatServiceDll wechatServeice;
+    private WechatServiceJson wechatServeice;
     @Autowired
     private RedPacketMapper redPacketMapper;
     @Autowired

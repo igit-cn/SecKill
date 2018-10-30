@@ -1,5 +1,6 @@
 package com.cloudSeckill.config;
 
+import com.cloudSeckill.controller.ReceiveDataController;
 import com.cloudSeckill.controller.ReceiveDataControllerDll;
 import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
@@ -16,7 +17,7 @@ import java.util.List;
 @EnableCaching
 public class ReceiverDataConfig extends Thread{
 
-    @Autowired private ReceiveDataControllerDll receiveDataController;
+    @Autowired private ReceiveDataController receiveDataController;
     @Autowired private UserMapper userMapper;
 
     @Override
