@@ -32,7 +32,7 @@ public interface DllInterface extends Library {
     String WXSyncContact(int object);
 
     //注销、退出、下线
-    String WXUserLogout(int object);
+    String WXLogout(int object);
 
     //同步消息
     String WXSyncMessage(int object);
