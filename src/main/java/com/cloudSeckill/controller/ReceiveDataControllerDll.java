@@ -90,6 +90,7 @@ public class ReceiveDataControllerDll extends BaseController {
                     //检测到期时间
                     User user = tokenList.get(WXUserId);
                     if (user == null) {//未找到用户  非法
+
                         return;
                     }
 
@@ -396,6 +397,18 @@ public class ReceiveDataControllerDll extends BaseController {
         synchronized (this) {
             tokenList.put(user.getToken(), user);
         }
+    }
+
+    //获取tokenMap
+    public String getTokenByUsername(String username) {
+        synchronized (this) {
+            for (String token : tokenList.keySet()) {
+                User user = tokenList.get(token);
+                if(user.getWechatId().equals(username)){}
+                return token;
+            }
+        }
+        return "";
     }
 
     public void removeToken(String token) {
