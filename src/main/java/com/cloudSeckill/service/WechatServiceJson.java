@@ -231,6 +231,14 @@ public class WechatServiceJson {
         });
     }
 
+    //检查此微信之前是否曾经登陆过，并且未退出，此时把之前的微信号object退出
+    private void logoutBeforeLogin(User user) {
+        if (!StringUtils.isEmpty(redisUtil.getStr(user.getWechatId()))) {
+            user.setToken(redisUtil.getStr(user.getWechatId()));
+            wechatLogout(user);
+        }
+    }
+
     /**
      * 保存微信信息
      */
@@ -253,11 +261,14 @@ public class WechatServiceJson {
         user.setHeadImg(qrCodeStatusBean.head_url);
         user.setName(qrCodeStatusBean.nick_name);
         user.setOnlineStatus(1);
+        //注销此微信之前登录的痕迹
+        logoutBeforeLogin(user);
         user.setToken(userInfo.token);
         //TODO 此处保存IP到数据库
         userMapper.updateByExample(user, queryExample);
         //绑定坑id与请求服务器的地址
         redisUtil.set("keng_id-" + user.getId(), userInfo.ipAddress);
+        redisUtil.set(user.getWechatId(), userInfo.token);
         //微信信息绑定,推送前端结果
         wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("wechatLoginSuccess"));
         //登录成功之后token绑定微信id
@@ -302,7 +313,8 @@ public class WechatServiceJson {
      */
     public void wechatLogout(User user) {
         HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXExtDeviceLogout));
+        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXLogout));
+        //httpClient.setUrl("http://127.0.0.1:2223/WXLogout");
         httpClient.addParams("object", user.getToken());
         httpClient.sendAsJson(new HttpCallBack<HearBeatBean>() {
             @Override

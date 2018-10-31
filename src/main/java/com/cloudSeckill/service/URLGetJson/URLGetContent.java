@@ -16,7 +16,7 @@ public class URLGetContent {
     public static final String WXHeartBeat = ip + "WXHeartBeat";
     public static final String WXSyncMessage = ip + "WXSyncMessage";
     public static final String WXSyncContact = ip + "WXSyncContact";
-    public static final String WXExtDeviceLogout = ip + "WXExtDeviceLogout";
+    public static final String WXLogout = ip + "WXLogout";
     public static final String WXSendMsg = ip + "WXSendMsg";
     public static final String WXReceiveRedPacket = ip + "WXReceiveRedPacket";
     public static final String WXOpenRedPacket = ip + "WXOpenRedPacket";

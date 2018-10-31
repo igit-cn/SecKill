@@ -313,7 +313,7 @@ public class WechatServiceSocket {
      */
     public void wechatLogout(User user) {
         HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXExtDeviceLogout));
+        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXLogout));
         httpClient.addParams("object", user.getToken());
         httpClient.sendAsJson(new HttpCallBack<HearBeatBean>() {
             @Override

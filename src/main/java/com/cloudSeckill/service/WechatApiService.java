@@ -369,7 +369,7 @@ public class WechatApiService {
         jsonObject.addProperty("object", user.getToken());
         try {
             Response response = OkHttpUtils.postString()
-                    .url(URLGetContent.WXExtDeviceLogout)
+                    .url(URLGetContent.WXLogout)
                     .content(jsonObject.toString())
                     .mediaType(MediaType.parse("application/json; charset=utf-8")).build()
                     .execute();
