@@ -102,6 +102,7 @@ public class WechatServiceJson {
         new Thread() {
             @Override
             public void run() {
+                int[] expired_time = {0};
                 userInfo.isLooperOpen = true;
                 while (userInfo.isLooperOpen) {
                     HttpClient httpClient = new HttpClient();
@@ -116,7 +117,7 @@ public class WechatServiceJson {
                                 userInfo.isLooperOpen = false;
 //                                ultimatelyLogin(session, userInfo, qrCodeStatusBean);
                                 macLogin(session, userInfo, qrCodeStatusBean);
-                            } else if (qrCodeStatusBean.status == 3 || qrCodeStatusBean.status == 4 || qrCodeStatusBean.expired_time < 140) {//已经超时.已经取消
+                            } else if (qrCodeStatusBean.status == 3 || qrCodeStatusBean.status == 4 || expired_time[0] > 140) {//已经超时.已经取消
                                 userInfo.isLooperOpen = false;
                                 wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
                             }
@@ -124,6 +125,7 @@ public class WechatServiceJson {
                     });
                     try {
                         Thread.sleep(1000);
+                        expired_time[0] = expired_time[0] + 1;
                     } catch (InterruptedException e) {
                     }
                 }
