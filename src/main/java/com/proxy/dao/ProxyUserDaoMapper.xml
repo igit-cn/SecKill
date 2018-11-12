@@ -60,6 +60,10 @@
     <select id="queryUserRegister" resultType="com.proxy.entity.UserEntity">
         SELECT * FROM proxy_user WHERE user_name = #{param1} or email = #{param2}
     </select>
+
+    <select id="queryUserRegisterByName" resultType="com.proxy.entity.UserEntity">
+        SELECT * FROM proxy_user WHERE user_name = #{param1}
+    </select>
     
     <insert id="userRegister">
         INSERT INTO proxy_user (user_name,password,email,use_time,register_time) VALUES (#{param1},#{param2},#{param3},#{param4},#{param5})

@@ -32,6 +32,11 @@ public interface ProxyUserDaoMapper {
     List<UserEntity> queryUserRegister(String userName, String email);
 
     /**
+     * 查询用户名和邮箱是否注册过
+     */
+    List<UserEntity> queryUserRegisterByName(String userName);
+
+    /**
      * 用户注册
      */
     void userRegister(String userName, String digest, String email, long coinCount, long time);

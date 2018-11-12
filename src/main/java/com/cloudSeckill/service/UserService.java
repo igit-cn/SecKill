@@ -81,6 +81,13 @@ public class UserService {
     public List<UserEntity> queryUserRegister(String userName ,String email){
         return proxyUserDaoMapper.queryUserRegister(userName,email);
     }
+
+    /**
+     * 查询用户是否注册
+     */
+    public List<UserEntity> queryUserRegisterByName(String userName){
+        return proxyUserDaoMapper.queryUserRegisterByName(userName);
+    }
     
     /**
      * 发送邮箱
@@ -148,7 +155,7 @@ public class UserService {
     public ProxyResultBean UserRegister(RegisterRequest registerRequest) {
         ProxyResultBean proxyResultBean = new ProxyResultBean();
         
-        List<UserEntity> userEntities = queryUserRegister(registerRequest.userName, registerRequest.userEmail);
+        List<UserEntity> userEntities = queryUserRegisterByName(registerRequest.userName);
         if (userEntities.size() != 0) {
             proxyResultBean.code = ResponseCode.CURRENT_PROXY_ACCOUNT_EXIST;
             proxyResultBean.msg = userEntities.get(0).user_name.equals(registerRequest.userName) ? "用户名已存在" : "邮箱已经注册";
