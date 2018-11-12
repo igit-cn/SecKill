@@ -112,7 +112,7 @@ public class ProxyAction {
      */
     @RequestMapping("registerProxy")
     public @ResponseBody String registerProxy(String account, String password, String previousProxyAccount, String email) {
-        String checkParams = checkUtils.checkParamsIsEmpty(account,password,previousProxyAccount,email);
+        String checkParams = checkUtils.checkParamsIsEmpty(account,password,previousProxyAccount/*,email*/);
         if(checkParams != null){
             return checkParams;
         }
@@ -133,12 +133,12 @@ public class ProxyAction {
             return new Gson().toJson(resultEntity);
         }
 
-        if (proxyService.getProxyInfoByEmail(email) != null) {
+        /*if (proxyService.getProxyInfoByEmail(email) != null) {
             resultEntity.code = ResponseCode.CURRENT_PROXY_EMAIL_EXIST;
             resultEntity.msg = "当前邮箱已经被注册";
             resultEntity.data = new NullEntity();
             return new Gson().toJson(resultEntity);
-        }
+        }*/
 
         proxyService.createProxyAccount(account, MD5Util.digest(password), firstPreviousInfoEntity.proxy_name, firstPreviousInfoEntity.id, email);
         resultEntity.code = ResponseCode.RESPONSE_OK;

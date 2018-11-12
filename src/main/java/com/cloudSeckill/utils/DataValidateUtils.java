@@ -41,9 +41,9 @@ public class DataValidateUtils {
             dataValidateUtils.validateMsg = "请输入密码";
         } else if(StringUtils.isEmpty(registerRequest.userActiveCode)){
             dataValidateUtils.validateMsg = "请输入激活码";
-        } else if(StringUtils.isEmpty(registerRequest.userEmail)){
+        }/* else if(StringUtils.isEmpty(registerRequest.userEmail)){
             dataValidateUtils.validateMsg = "请输入邮箱";
-        } else if(StringUtils.isEmpty(registerRequest.validateCode)){
+        }*/ else if(StringUtils.isEmpty(registerRequest.validateCode)){
             dataValidateUtils.validateMsg = "请输入验证码";
         } else {
             dataValidateUtils.validateResult = true;

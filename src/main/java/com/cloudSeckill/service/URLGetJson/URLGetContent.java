@@ -1,10 +1,12 @@
 package com.cloudSeckill.service.URLGetJson;
 
+import com.cloudSeckill.utils.TextUtils;
+
 public class URLGetContent {
     public static String url = "http://110.80.137.86:12888/api.php";
 //    public static final String ip = "http://47.92.166.84:2223/";
     //旧的接口
-    private static final String ip = "http://%s:2223/";
+    private static final String ip = "http://%s:%s/";
     //socket接口
 //    private static final String ip = "http://%s:8888/";
     //private static final String ip = "http://127.0.0.1:2223/";
@@ -24,6 +26,10 @@ public class URLGetContent {
     public static final String WXSetRecvMsgCallBack = ip + "WXSetRecvMsgCallBack";
 
     public static String getFullUrl(String ip, String url) {
-        return String.format(url, ip);
+        if(!TextUtils.equals(ip,"117.50.77.81")){
+            return String.format(url, ip,"2223");
+        } else {
+            return String.format(url, ip,"2225");
+        }
     }
 }

@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 public class BaseWebSocket extends TextWebSocketHandler {
-    
+
     protected final LinkedList<WebSocketSession> users = new LinkedList();
 
     /**
@@ -28,6 +28,7 @@ public class BaseWebSocket extends TextWebSocketHandler {
      * 给某个用户发送消息
      */
     public void sendMessageToUser(String userName, TextMessage message) {
+        LogUtils.info("WebSocket给某个用户发送消息：" + userName + ";msg:" + message);
         for (WebSocketSession user : users) {
             UserInfo userInfo = SessionUtils.getUserInfoFromWebSocket(user);
             if (userInfo != null && userInfo.userName.equals(userName)) {
@@ -58,6 +59,7 @@ public class BaseWebSocket extends TextWebSocketHandler {
             }
         }
     }
+
     /**
      * 给某个前端发送消息
      */

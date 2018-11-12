@@ -30,7 +30,7 @@
             <div class="input-wrap sui-border-b">
                 <input id="activeCode" type="text" placeholder="请输入激活码"/>
             </div>
-            <div class="input-wrap sui-border-b">
+            <div class="input-wrap sui-border-b" style="display: none">
                 <input id="email" type="text" placeholder="请输入邮箱，找回密码使用"/>
             </div>
             <div class="input-wrap sui-border-b">
@@ -100,10 +100,10 @@
                 $.toastError("请输入激活码");
                 return;
             }
-            if ($.trim(email).length == 0) {
+            /*if ($.trim(email).length == 0) {
                 $.toastError("请输入邮箱");
                 return;
-            }
+            }*/
             if ($.trim(userVerifyCode).length == 0) {
                 $.toastError("请输入验证码");
                 return;

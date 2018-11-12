@@ -271,13 +271,14 @@ public class WechatServiceJson {
         //绑定坑id与请求服务器的地址
         redisUtil.set("keng_id-" + user.getId(), userInfo.ipAddress);
         redisUtil.set(user.getWechatId(), userInfo.token);
-        //微信信息绑定,推送前端结果
-        wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("wechatLoginSuccess"));
         //登录成功之后token绑定微信id
         receiveDataController.addToken(user);
 
         //发送初始化通知
         receiveDataController.initNotification(user.getToken(), user.getWechatId());
+
+        //微信信息绑定,推送前端结果
+        wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("wechatLoginSuccess"));
 
         //同步通讯录
         List<SyncContactBean> chainList = new ArrayList();
