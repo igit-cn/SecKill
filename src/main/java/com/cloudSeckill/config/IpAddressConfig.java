@@ -20,20 +20,20 @@ public class IpAddressConfig {
     @Value("${three.ip2.weight}")
     private String ip2Weight;
 
-    /*@Value("${three.ip3}")
+    @Value("${three.ip3}")
     private String ip3;
     @Value("${three.ip3.weight}")
     private String ip3Weight;
 
-    @Value("${three.ip4}")
-    private String ip4;
-    @Value("${three.ip4.weight}")
-    private String ip4Weight;
-
-    @Value("${three.ip5}")
-    private String ip5;
-    @Value("${three.ip5.weight}")
-    private String ip5Weight;*/
+//    @Value("${three.ip4}")
+//    private String ip4;
+//    @Value("${three.ip4.weight}")
+//    private String ip4Weight;
+//
+//    @Value("${three.ip5}")
+//    private String ip5;
+//    @Value("${three.ip5.weight}")
+//    private String ip5Weight;
 
 //    @Value("${three.port}")
 //    private String port;
@@ -42,9 +42,9 @@ public class IpAddressConfig {
         Map<String, Integer> list = new HashMap();
         list.put(ip1, Integer.parseInt(ip1Weight));
         list.put(ip2, Integer.parseInt(ip2Weight));
-        /*list.put(ip3, Integer.parseInt(ip3Weight));
-        list.put(ip4, Integer.parseInt(ip4Weight));
-        list.put(ip5, Integer.parseInt(ip5Weight));*/
+        list.put(ip3, Integer.parseInt(ip3Weight));
+//        list.put(ip4, Integer.parseInt(ip4Weight));
+//        list.put(ip5, Integer.parseInt(ip5Weight));
 
         int allWeight = 0;
         for (String ip : list.keySet()) {
@@ -67,6 +67,6 @@ public class IpAddressConfig {
 //    }
 
     public String[] getAllIP() {
-        return new String[]{ip1, ip2};
+        return new String[]{ip1, ip2, ip3};
     }
 }
