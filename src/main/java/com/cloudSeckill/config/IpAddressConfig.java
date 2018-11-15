@@ -43,7 +43,7 @@ public class IpAddressConfig {
         list.put(ip1, Integer.parseInt(ip1Weight));
         list.put(ip2, Integer.parseInt(ip2Weight));
         list.put(ip3, Integer.parseInt(ip3Weight));
-        list.put(ip4, Integer.parseInt(ip4Weight));
+//        list.put(ip4, Integer.parseInt(ip4Weight));
 //        list.put(ip5, Integer.parseInt(ip5Weight));
 
         int allWeight = 0;
@@ -67,6 +67,6 @@ public class IpAddressConfig {
 //    }
 
     public String[] getAllIP() {
-        return new String[]{ip1, ip2, ip3, ip4};
+        return new String[]{ip1, ip2, ip3};
     }
 }
