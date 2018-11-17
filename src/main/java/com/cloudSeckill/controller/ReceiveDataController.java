@@ -6,14 +6,14 @@ import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
 import com.cloudSeckill.dao.mapper.RedPacketMapper;
 import com.cloudSeckill.dao.mapper.UserMapper;
-import com.cloudSeckill.data.response.*;
-import com.cloudSeckill.net.http.HttpClient;
+import com.cloudSeckill.data.response.DataInfoBean;
+import com.cloudSeckill.data.response.RedPickBean;
+import com.cloudSeckill.data.response.ResponseBean;
+import com.cloudSeckill.data.response.SyncContactBean;
 import com.cloudSeckill.net.http.callback.HttpCallBack;
 import com.cloudSeckill.net.http.callback.HttpClientEntity;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
-import com.cloudSeckill.service.URLGetJson.URLGetContent;
-import com.cloudSeckill.service.WechatServiceDll;
-import com.cloudSeckill.service.WechatServiceJson;
+import com.cloudSeckill.service.WechatServiceInter;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
 import com.cloudSeckill.utils.TextUtils;
@@ -21,7 +21,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.proxy.utils.StringUtils;
-import com.squareup.okhttp.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.TextMessage;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,7 +39,7 @@ public class ReceiveDataController extends BaseController {
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private WechatServiceJson wechatServeice;
+    private WechatServiceInter wechatServeice;
     @Autowired
     private RedPacketMapper redPacketMapper;
     @Autowired
@@ -125,10 +123,7 @@ public class ReceiveDataController extends BaseController {
     private void MsgSync(String token) {
         User user = tokenList.get(token);
         LogUtils.info("消息同步用户：" + user.getFromUserName() + ";登陆wc账号：" + user.getName());
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSyncMessage));
-        httpClient.addParams("object", token);
-        httpClient.sendAsJson(new HttpCallBack<List<DataInfoBean>>() {
+        wechatServeice.syncMessage(user, token, new HttpCallBack<List<DataInfoBean>>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, List<DataInfoBean> listTypeToken) {
                 JsonArray jsonArray = (JsonArray) new JsonParser().parse(httpClientEntity.json);
@@ -309,19 +304,7 @@ public class ReceiveDataController extends BaseController {
             userMapper.updateByExample(user, userExample);
         }
 
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSendMsg));
-        //WXSendMsg
-//        httpClient.addParams("method", "V1hTZW5kTXNn");
-        httpClient.addParams("object", user.getToken());
-        httpClient.addParams("user", chatRoom);
-        try {
-            httpClient.addParams("content", Base64.getEncoder().encodeToString(msg.getBytes("utf-8")));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-//        httpClient.addParams("content", msg);
-        httpClient.sendAsJson(null);
+        wechatServeice.sendTextMsg(user, user.getToken(), chatRoom, msg);
     }
 
     /**
@@ -330,36 +313,7 @@ public class ReceiveDataController extends BaseController {
     private void ReceiveRedPacket(String json, String token, String chatRoom, boolean isGroup) {
         LogUtils.info("接受红包数据");
         User user = tokenList.get(token);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXReceiveRedPacket));
-        //WXReceiveRedPacket
-//        httpClient.addParams("method", "V1hSZWNlaXZlUmVkUGFja2V0");
-        httpClient.addParams("object", token);
-        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
-        //httpClient.addParams("red_packet", json);
-        httpClient.sendAsJson(new HttpCallBack<ReceiveRedPacketBean>() {
-            @Override
-            public void onSuccess(HttpClientEntity httpClientEntity, ReceiveRedPacketBean receiveRedPacketBean) {
-                redPick(json, token, receiveRedPacketBean.key, chatRoom, isGroup);
-            }
-        });
-    }
-
-    /**
-     * 抢红包
-     */
-    private void redPick(String json, String token, String key, String chatRoom, boolean isGroup) {
-        LogUtils.info("抢红包");
-        User user = tokenList.get(token);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXOpenRedPacket));
-        //WXOpenRedPacket
-//        httpClient.addParams("method", "V1hPcGVuUmVkUGFja2V0");
-        httpClient.addParams("object", token);
-        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
-        //       httpClient.addParams("red_packet", json);
-        httpClient.addParams("key", key);
-        httpClient.sendAsJson(new HttpCallBack<RedPickBean>() {
+        wechatServeice.receiveRedPacket(user, token, json, chatRoom, isGroup, new HttpCallBack<RedPickBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, RedPickBean redPickBean) {
                 //没有抢成功
@@ -427,13 +381,7 @@ public class ReceiveDataController extends BaseController {
      */
     private void pickTransfer(String json, String token) {
         User user = tokenList.get(token);
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXTransferOperation));
-        //WXTransferOperation
-//        httpClient.addParams("method", "V1hUcmFuc2Zlck9wZXJhdGlvbg==");
-        httpClient.addParams("object", token);
-        httpClient.addParams("transfer", json);
-        httpClient.sendAsJson(null);
+        wechatServeice.pickTransfer(user, json, token);
     }
 
     //添加轮询user

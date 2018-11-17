@@ -9,7 +9,7 @@ import com.cloudSeckill.dao.mapper.UserMapper;
 import com.cloudSeckill.data.response.*;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
 import com.cloudSeckill.service.DllInterface;
-import com.cloudSeckill.service.WechatServiceJson;
+import com.cloudSeckill.service.WechatServiceInter;
 import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.RedisUtil;
 import com.cloudSeckill.utils.TextUtils;
@@ -34,7 +34,7 @@ public class ReceiveDataControllerDll extends BaseController {
     @Autowired
     private UserMapper userMapper;
     @Autowired
-    private WechatServiceJson wechatServeice;
+    private WechatServiceInter wechatServeice;
     @Autowired
     private RedPacketMapper redPacketMapper;
     @Autowired

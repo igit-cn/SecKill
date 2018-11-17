@@ -2,6 +2,7 @@ package com.cloudSeckill.net.http;
 
 import com.cloudSeckill.net.http.callback.HttpCallBack;
 import com.cloudSeckill.net.socket.socket.SocketClient;
+import com.cloudSeckill.utils.LogUtils;
 import com.cloudSeckill.utils.TextUtils;
 import com.google.gson.JsonObject;
 import com.proxy.utils.StringUtils;
@@ -83,7 +84,9 @@ public class RequestHttp {
         long start = System.currentTimeMillis();
         Request.Builder builder = new Request.Builder();
         builder.url(urlPath);
-        builder.post(RequestBody.create(MediaType.parse("application/json;charset=UTF-8"), getJsonPost()));
+        String jsonPost = getJsonPost();
+        LogUtils.info(urlPath + "请求参数：" + jsonPost);
+        builder.post(RequestBody.create(MediaType.parse("application/json;charset=UTF-8"), jsonPost));
         try {
             Response execute = new OkHttpClient().newCall(builder.build()).execute();
             if (execute.code() != 200) {

@@ -2,6 +2,7 @@ package com.cloudSeckill.service;
 
 import com.cloudSeckill.config.IpAddressConfig;
 import com.cloudSeckill.controller.ReceiveDataController;
+import com.cloudSeckill.dao.domain.RedPacket;
 import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
 import com.cloudSeckill.dao.mapper.UserMapper;
@@ -15,16 +16,19 @@ import com.cloudSeckill.service.URLGetJson.URLGetContent;
 import com.cloudSeckill.utils.*;
 import com.proxy.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Primary;
 import org.springframework.web.socket.TextMessage;
 
 import javax.servlet.http.HttpSession;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 
-@Service
-public class WechatServiceDllApi {
+//@Service
+@Primary
+public class WechatServiceDllApi implements WechatServiceInter {
 
     @Autowired
     private IpAddressConfig ipAddressConfig;
@@ -36,10 +40,15 @@ public class WechatServiceDllApi {
     private UserMapper userMapper;
     @Autowired
     private RedisUtil redisUtil;
+    private int ultimatelyLoginCount = 0;
+    private int heartBeatCount = 0;
 
-    String name = "hahahaipad";
-    String mac = Utils.getRandomMac();
-    String uuid = Utils.getRandomUUID();
+    public static String name = "hahahaipad";
+    public static String mac = Utils.getRandomMac();
+    public static String uuid = Utils.getRandomUUID();
+    public static String uuid2 = "<softtype><k3>9.0.2</k3><k9>iPad</k9><k10>2</k10><k19>58BF17B5-2D8E-4BFB-A97E-38F1226F13F8</k19><k20>" + uuid
+            + "</k20><k21>neihe_5GHz</k21><k22>(null)</k22><k24>" + mac + "</k24><k33>\\345\\276\\256\\344\\277\\241</k33><k47>1</k47><k50>1</k50><k51>com.tencent.xin</k51><k54>iPad4,4</k54></softtype>";
+
 
     /**
      * 初始化微信客户端
@@ -47,8 +56,6 @@ public class WechatServiceDllApi {
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
         HttpClient httpClient = new HttpClient();
-//        String randomIP = ipAddressConfig.getRandomIP();
-//        String randomIP = redisUtil.getStr("keng_id-" + userInfo.user_id);
         String randomIP = redisUtil.getStr("keng_id-" + SessionUtils.getCurrentSelectKengId(session));
         LogUtils.info("从缓存中获取keng-IP：" + randomIP);
         if (TextUtils.isEmpty(randomIP)) {
@@ -58,9 +65,9 @@ public class WechatServiceDllApi {
         userInfo.ipAddress = randomIP;
         httpClient.setUrl(URLGetContent.getFullUrl(randomIP, URLGetContent.WXInitialize));
         httpClient.addParams("name", name);
-        httpClient.addParams("mac", mac);
-        httpClient.addParams("uuid", uuid);
-        httpClient.sendAsJson(new HttpCallBack<Object>() {
+        httpClient.addParams("mac", uuid);
+        httpClient.addParams("uuid", uuid2);
+        httpClient.sendAsJsonRel(new HttpCallBack<Object>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object str) {
                 userInfo.token = httpClientEntity.json;
@@ -73,12 +80,12 @@ public class WechatServiceDllApi {
     /**
      * 获取微信登录二维码
      */
-    private byte[] getLoginQRCode(HttpSession session, UserInfo userInfo) {
+    public byte[] getLoginQRCode(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXGetQRCode));
         httpClient.addParams("object", userInfo.token);
-        httpClient.sendAsJson(new HttpCallBack<GetQRCodeBean>() {
+        httpClient.sendAsJsonRel(new HttpCallBack<GetQRCodeBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, GetQRCodeBean getQRCodeBean) {
                 content[0] = Base64.getDecoder().decode(getQRCodeBean.qr_code);
@@ -91,45 +98,41 @@ public class WechatServiceDllApi {
     /**
      * 轮询获取二维码扫描状态
      */
-    private void looperGetWechatStatus(HttpSession session, UserInfo userInfo) {
+    public void looperGetWechatStatus(HttpSession session, UserInfo userInfo) {
         if (userInfo.isLooperOpen) {//当前用户已经有了个轮询 就不要打开了
             return;
         }
         //1. 300秒超时 轮询关闭
         //2. 我点了× 关闭
         //3. status == 2 已授权 关闭
-        new Thread() {
-            @Override
-            public void run() {
-                int[] expired_time = {0};
-                userInfo.isLooperOpen = true;
-                while (userInfo.isLooperOpen) {
-                    HttpClient httpClient = new HttpClient();
-                    httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXCheckQRCode));
-                    httpClient.addParams("object", userInfo.token);
-                    httpClient.sendAsJson(new HttpCallBack<QRCodeStatusBean>() {
-                        @Override
-                        public void onSuccess(HttpClientEntity httpClientEntity, QRCodeStatusBean qrCodeStatusBean) {
-                            LogUtils.info("轮询状态：" + qrCodeStatusBean.toString());
-                            if (qrCodeStatusBean.status == 2) {//授权成功
-                                userInfo.isWechatLoginSuccess = true;
-                                userInfo.isLooperOpen = false;
-//                                ultimatelyLogin(session, userInfo, qrCodeStatusBean);
-                                macLogin(session, userInfo, qrCodeStatusBean);
-                            } else if (qrCodeStatusBean.status == 3 || qrCodeStatusBean.status == 4 || expired_time[0] > 140) {//已经超时.已经取消
-                                userInfo.isLooperOpen = false;
-                                wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
-                            }
+        new Thread(() -> {
+            int[] expired_time = {0};
+            userInfo.isLooperOpen = true;
+            while (userInfo.isLooperOpen) {
+                HttpClient httpClient = new HttpClient();
+                httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXCheckQRCode));
+                httpClient.addParams("object", userInfo.token);
+                httpClient.sendAsJsonRel(new HttpCallBack<QRCodeStatusBean>() {
+                    @Override
+                    public void onSuccess(HttpClientEntity httpClientEntity, QRCodeStatusBean qrCodeStatusBean) {
+                        LogUtils.info("轮询状态：" + qrCodeStatusBean.toString());
+                        if (qrCodeStatusBean.status == 2) {//授权成功
+                            userInfo.isWechatLoginSuccess = true;
+                            userInfo.isLooperOpen = false;
+                            macLogin(session, userInfo, qrCodeStatusBean);
+                        } else if (qrCodeStatusBean.status == 3 || qrCodeStatusBean.status == 4 || expired_time[0] > 140) {//已经超时.已经取消
+                            userInfo.isLooperOpen = false;
+                            wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
                         }
-                    });
-                    try {
-                        Thread.sleep(1000);
-                        expired_time[0] = expired_time[0] + 1;
-                    } catch (InterruptedException e) {
                     }
+                });
+                try {
+                    Thread.sleep(1000);
+                    expired_time[0] = expired_time[0] + 1;
+                } catch (InterruptedException e) {
                 }
             }
-        }.start();
+        }).start();
     }
 
     /**
@@ -144,61 +147,35 @@ public class WechatServiceDllApi {
         httpClient.addParams("user", qrCodeStatusBean.user_name);
         httpClient.addParams("password", qrCodeStatusBean.password);
         httpClient.addParams("data62", "123");
-        httpClient.sendAsJson(new HttpCallBack<Object>() {
+        httpClient.sendAsJsonRel(new HttpCallBack<Object>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object o) {
                 LogUtils.info("MAC登陆结果：" + httpClientEntity.json);
+                ultimatelyLoginCount = 0;
                 ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });
-
-//        QRCodeStatusBean qRStatusBean = new Gson().fromJson(qrStatusInfo, QRCodeStatusBean.class);
-//        WXMacLoginBean wxMacLoginBean = new WXMacLoginBean();
-//        wxMacLoginBean.setName(wxInitializeBean.getName());
-//        wxMacLoginBean.setMac(wxInitializeBean.getMac());
-//        wxMacLoginBean.setUuid(wxInitializeBean.getUuid());
-//        wxMacLoginBean.setUser(qRStatusBean.user_name);
-//        wxMacLoginBean.setPassword(qRStatusBean.password);
-//        wxMacLoginBean.setData62("123");
-//        String json = new Gson().toJson(wxMacLoginBean);
-//        json = Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", "");
-//        try {
-//            Response response = OkHttpUtils.postString()
-//                    .url(URLGetContent.WXMacLogin)
-//                    .content(json)
-//                    .mediaType(MediaType.parse("application/json; charset=utf-8"))
-//                    .build()
-//                    .execute();
-//            if (response.isSuccessful()) {
-//                String result = response.body().string();
-//                //{"status":= 0}
-//                System.out.println(result);
-//                ultimatelyLogin(session, userInfo, qrStatusInfo);
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     /**
      * 最终登录
      */
-    private void ultimatelyLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
-        final int[] count = {0};
+    public void ultimatelyLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXQRCodeLogin));
         httpClient.addParams("object", userInfo.token);
         httpClient.addParams("user", qrCodeStatusBean.user_name);
         httpClient.addParams("password", qrCodeStatusBean.password);
-        httpClient.sendAsJson(new HttpCallBack<QRCodeLoginBean>() {
+        httpClient.sendAsJsonRel(new HttpCallBack<QRCodeLoginBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, QRCodeLoginBean qrCodeLoginBean) {
-                count[0]++;
-                if (count[0] == 3) {
+                ultimatelyLoginCount++;
+                if (ultimatelyLoginCount >= 3) {
                     //TODO 失败三次 WebSocket异步通知
                     return;
                 }
-                if (qrCodeLoginBean.status == 0) {//登录失败
+                if (qrCodeLoginBean.status == 0) {
+                    heartBeatCount = 0;
                     heartBeat(session, userInfo, qrCodeStatusBean);
                     return;
                 }
@@ -210,16 +187,15 @@ public class WechatServiceDllApi {
     /**
      * 心跳
      */
-    private void heartBeat(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
-        final int[] count = {0};
+    public void heartBeat(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXHeartBeat));
         httpClient.addParams("object", userInfo.token);
-        httpClient.sendAsJson(new HttpCallBack<HearBeatBean>() {
+        httpClient.sendAsJsonRel(new HttpCallBack<HearBeatBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, HearBeatBean hearBeatBean) {
-                count[0]++;
-                if (count[0] == 3) {
+                heartBeatCount++;
+                if (heartBeatCount >= 3) {
                     //TODO 失败三次 WebSocket异步通知
                     return;
                 }
@@ -234,10 +210,10 @@ public class WechatServiceDllApi {
 
     //检查此微信之前是否曾经登陆过，并且未退出，此时把之前的微信号object退出
     private void logoutBeforeLogin(User user) {
-        if (!StringUtils.isEmpty(redisUtil.getStr(user.getWechatId()))) {
-            user.setToken(redisUtil.getStr(user.getWechatId()));
-            wechatLogout(user);
-        }
+//        if (!StringUtils.isEmpty(redisUtil.getStr(user.getWechatId()))) {
+//            user.setToken(redisUtil.getStr(user.getWechatId()));
+//            wechatLogout(user);
+//        }
     }
 
     /**
@@ -295,7 +271,7 @@ public class WechatServiceDllApi {
         String ipAddress = redisUtil.getStr("keng_id-" + user.getId() + "");
         httpClient.setUrl(URLGetContent.getFullUrl(ipAddress, URLGetContent.WXSyncContact));
         httpClient.addParams("object", user.getToken());
-        httpClient.sendAsJson(new HttpCallBack<List<SyncContactBean>>() {
+        httpClient.sendAsJsonRel(new HttpCallBack<List<SyncContactBean>>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, List<SyncContactBean> syncContactBeen) {
                 if (syncContactBeen.size() != 0 && syncContactBeen.get(0).isContinue != 0) {
@@ -310,6 +286,81 @@ public class WechatServiceDllApi {
         });
     }
 
+    @Override
+    public void syncMessage(User user, String token, HttpCallBack callBack) {
+        HttpClient httpClient = new HttpClient();
+        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSyncMessage));
+        httpClient.addParams("object", token);
+        httpClient.sendAsJsonRel(callBack);
+    }
+
+    /**
+     * 发送文字消息
+     */
+    @Override
+    public void sendTextMsg(User user, String token, String chatRoom, String content) {
+        HttpClient httpClient = new HttpClient();
+        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXSendMsg));
+        //WXSendMsg
+//        httpClient.addParams("method", "V1hTZW5kTXNn");
+        httpClient.addParams("object", user.getToken());
+        httpClient.addParams("user", chatRoom);
+//        try {
+//            httpClient.addParams("content", Base64.getEncoder().encodeToString(content.getBytes("utf-8")));
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+        httpClient.addParams("content", content);
+        httpClient.sendAsJsonRel(null);
+    }
+
+    /**
+     * 接受红包数据
+     */
+    @Override
+    public void receiveRedPacket(User user, String token, String red_packet, String chatRoom, boolean isGroup, HttpCallBack redPickCallback) {
+        HttpClient httpClient = new HttpClient();
+        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXReceiveRedPacket));
+        //WXReceiveRedPacket
+//        httpClient.addParams("method", "V1hSZWNlaXZlUmVkUGFja2V0");
+        httpClient.addParams("object", token);
+        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(red_packet.getBytes()).trim().replace("\n", ""));
+        //httpClient.addParams("red_packet", json);
+        httpClient.sendAsJsonRel(new HttpCallBack<ReceiveRedPacketBean>() {
+            @Override
+            public void onSuccess(HttpClientEntity httpClientEntity, ReceiveRedPacketBean receiveRedPacketBean) {
+                redPick(user, red_packet, token, receiveRedPacketBean.key, chatRoom, isGroup, redPickCallback);
+            }
+        });
+    }
+
+    /**
+     * 抢红包
+     */
+    private void redPick(User user, String json, String token, String key, String chatRoom, boolean isGroup, HttpCallBack redPickCallback) {
+        LogUtils.info("抢红包");
+        HttpClient httpClient = new HttpClient();
+        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXOpenRedPacket));
+        //WXOpenRedPacket
+//        httpClient.addParams("method", "V1hPcGVuUmVkUGFja2V0");
+        httpClient.addParams("object", token);
+        httpClient.addParams("red_packet", Base64.getEncoder().encodeToString(json.getBytes()).trim().replace("\n", ""));
+        //       httpClient.addParams("red_packet", json);
+        httpClient.addParams("key", key);
+        httpClient.sendAsJsonRel(redPickCallback);
+    }
+
+    @Override
+    public void pickTransfer(User user, String transfer, String token) {
+        HttpClient httpClient = new HttpClient();
+        httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXTransferOperation));
+        //WXTransferOperation
+//        httpClient.addParams("method", "V1hUcmFuc2Zlck9wZXJhdGlvbg==");
+        httpClient.addParams("object", token);
+        httpClient.addParams("transfer", transfer);
+        httpClient.sendAsJson(null);
+    }
+
     /**
      * 退出登录
      */
@@ -318,7 +369,7 @@ public class WechatServiceDllApi {
         httpClient.setUrl(URLGetContent.getFullUrl(redisUtil.getStr("keng_id-" + user.getId()), URLGetContent.WXLogout));
         //httpClient.setUrl("http://127.0.0.1:2223/WXLogout");
         httpClient.addParams("object", user.getToken());
-        httpClient.sendAsJson(new HttpCallBack<HearBeatBean>() {
+        httpClient.sendAsJsonRel(new HttpCallBack<HearBeatBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, HearBeatBean hearBeatBean) {
                 System.out.println(hearBeatBean.status);

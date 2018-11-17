@@ -2,7 +2,6 @@ package com.cloudSeckill.service;
 
 import com.cloudSeckill.config.IpAddressConfig;
 import com.cloudSeckill.controller.ReceiveDataController;
-import com.cloudSeckill.controller.ReceiveDataControllerDll;
 import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
 import com.cloudSeckill.dao.mapper.UserMapper;
@@ -16,7 +15,6 @@ import com.cloudSeckill.service.URLGetJson.URLGetContent;
 import com.cloudSeckill.utils.*;
 import com.proxy.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 
 import javax.servlet.http.HttpSession;
@@ -24,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-@Service
-public class WechatServiceJson {
+//@Service
+public class WechatServiceJson implements WechatServiceInter {
 
     @Autowired
     private IpAddressConfig ipAddressConfig;
@@ -74,7 +72,7 @@ public class WechatServiceJson {
     /**
      * 获取微信登录二维码
      */
-    private byte[] getLoginQRCode(HttpSession session, UserInfo userInfo) {
+    public byte[] getLoginQRCode(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXGetQRCode));
@@ -92,7 +90,7 @@ public class WechatServiceJson {
     /**
      * 轮询获取二维码扫描状态
      */
-    private void looperGetWechatStatus(HttpSession session, UserInfo userInfo) {
+    public void looperGetWechatStatus(HttpSession session, UserInfo userInfo) {
         if (userInfo.isLooperOpen) {//当前用户已经有了个轮询 就不要打开了
             return;
         }
@@ -184,7 +182,7 @@ public class WechatServiceJson {
     /**
      * 最终登录
      */
-    private void ultimatelyLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
+    public void ultimatelyLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
         final int[] count = {0};
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXQRCodeLogin));
@@ -211,7 +209,7 @@ public class WechatServiceJson {
     /**
      * 心跳
      */
-    private void heartBeat(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
+    public void heartBeat(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
         final int[] count = {0};
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXHeartBeat));
@@ -309,6 +307,26 @@ public class WechatServiceJson {
                 }
             }
         });
+    }
+
+    @Override
+    public void syncMessage(User user, String token, HttpCallBack callBack) {
+
+    }
+
+    @Override
+    public void sendTextMsg(User user, String token, String chatRoom, String content) {
+
+    }
+
+    @Override
+    public void receiveRedPacket(User user, String token, String red_packet, String chatRoom, boolean isGroup, HttpCallBack redPickCallback) {
+
+    }
+
+    @Override
+    public void pickTransfer(User user, String transfer, String token) {
+
     }
 
     /**
