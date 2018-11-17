@@ -79,6 +79,33 @@ public class RequestHttp {
         }
     }
 
+    public void executeRelJsonPost(final HttpCallBack httpCallBack) {
+        long start = System.currentTimeMillis();
+        Request.Builder builder = new Request.Builder();
+        builder.url(urlPath);
+        builder.post(RequestBody.create(MediaType.parse("application/json;charset=UTF-8"), getJsonPost()));
+        try {
+            Response execute = new OkHttpClient().newCall(builder.build()).execute();
+            if (execute.code() != 200) {
+                if (httpCallBack != null) {
+                    httpCallBack.onResponseFail(execute.request());
+                }
+            } else {
+                byte[] byteData = execute.body().bytes();
+                execute.body().close();
+                if (httpCallBack != null) {
+                    long time = System.currentTimeMillis() - start;
+                    if (time > 1000) {
+                        System.out.println("接口 " + urlPath + ":" + paramMap.get("method") + "  耗时 : " + time / 1000L);
+                    }
+                    httpCallBack.onResponseSuccess(new String(byteData, "UTF-8"), byteData, urlPath);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void executeJsonSocket(final HttpCallBack httpCallBack) throws UnsupportedEncodingException {
         long start = System.currentTimeMillis();
         try {

@@ -27,6 +27,9 @@ public class URLGetContent {
 
     public static String getFullUrl(String ip, String url) {
         if (!TextUtils.equals(ip, "117.50.77.81")) {
+            if (TextUtils.equals(ip, "127.0.0.1")) {
+                return String.format(url, ip, "8080");
+            }
             return String.format(url, ip, "2223");
         } else {
             return String.format(url, ip, "2225");

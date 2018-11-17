@@ -36,6 +36,14 @@ public class HttpClient {
         }
     }
 
+    public void sendAsJsonRel(HttpCallBack httpCallBack) {
+        try {
+            requestHttp.executeRelJsonPost(httpCallBack);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void sendAsSocket(HttpCallBack httpCallBack) {
         try {
             requestHttp.executeJsonSocket(httpCallBack);
