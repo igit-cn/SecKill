@@ -2,7 +2,6 @@ package com.cloudSeckill.service;
 
 import com.cloudSeckill.config.IpAddressConfig;
 import com.cloudSeckill.controller.ReceiveDataController;
-import com.cloudSeckill.dao.domain.RedPacket;
 import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
 import com.cloudSeckill.dao.mapper.UserMapper;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpSession;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 
 //@Service
@@ -105,9 +103,9 @@ public class WechatServiceDllApi implements WechatServiceInter {
         //1. 300秒超时 轮询关闭
         //2. 我点了× 关闭
         //3. status == 2 已授权 关闭
+        int[] expired_time = {0};
+        userInfo.isLooperOpen = true;
         new Thread(() -> {
-            int[] expired_time = {0};
-            userInfo.isLooperOpen = true;
             while (userInfo.isLooperOpen) {
                 HttpClient httpClient = new HttpClient();
                 httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXCheckQRCode));
@@ -124,10 +122,20 @@ public class WechatServiceDllApi implements WechatServiceInter {
                             userInfo.isLooperOpen = false;
                             wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
                         }
+//                        if (expired_time[0] > 5) {
+//                            userInfo.isLooperOpen = false;
+//                            wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
+//                        }
+                    }
+
+                    @Override
+                    public void onFailure(HttpClientEntity httpClientEntity) {
+                        userInfo.isLooperOpen = false;
+                        wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
                     }
                 });
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(2000);
                     expired_time[0] = expired_time[0] + 1;
                 } catch (InterruptedException e) {
                 }
@@ -170,7 +178,7 @@ public class WechatServiceDllApi implements WechatServiceInter {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, QRCodeLoginBean qrCodeLoginBean) {
                 ultimatelyLoginCount++;
-                if (ultimatelyLoginCount >= 3) {
+                if (ultimatelyLoginCount > 5) {
                     //TODO 失败三次 WebSocket异步通知
                     return;
                 }
@@ -179,9 +187,21 @@ public class WechatServiceDllApi implements WechatServiceInter {
                     heartBeat(session, userInfo, qrCodeStatusBean);
                     return;
                 }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });
+    }
+
+    private void setCallBack(UserInfo userInfo) {
+        HttpClient httpClient = new HttpClient();
+        httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXSetRecvMsgCallBack));
+        httpClient.addParams("object", userInfo.token);
+        httpClient.sendAsJsonRel(null);
     }
 
     /**
@@ -195,7 +215,7 @@ public class WechatServiceDllApi implements WechatServiceInter {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, HearBeatBean hearBeatBean) {
                 heartBeatCount++;
-                if (heartBeatCount >= 3) {
+                if (heartBeatCount > 5) {
                     //TODO 失败三次 WebSocket异步通知
                     return;
                 }
@@ -203,6 +223,7 @@ public class WechatServiceDllApi implements WechatServiceInter {
                     heartBeat(session, userInfo, qrCodeStatusBean);
                     return;
                 }
+                setCallBack(userInfo);
                 saveWechatInfo(session, userInfo, qrCodeStatusBean);
             }
         });
@@ -305,12 +326,12 @@ public class WechatServiceDllApi implements WechatServiceInter {
 //        httpClient.addParams("method", "V1hTZW5kTXNn");
         httpClient.addParams("object", user.getToken());
         httpClient.addParams("user", chatRoom);
-//        try {
-//            httpClient.addParams("content", Base64.getEncoder().encodeToString(content.getBytes("utf-8")));
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
-        httpClient.addParams("content", content);
+        try {
+            httpClient.addParams("content", Base64.getEncoder().encodeToString(content.getBytes("utf-8")));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+//        httpClient.addParams("content", content);
         httpClient.sendAsJsonRel(null);
     }
 
@@ -358,7 +379,7 @@ public class WechatServiceDllApi implements WechatServiceInter {
 //        httpClient.addParams("method", "V1hUcmFuc2Zlck9wZXJhdGlvbg==");
         httpClient.addParams("object", token);
         httpClient.addParams("transfer", transfer);
-        httpClient.sendAsJson(null);
+        httpClient.sendAsJsonRel(null);
     }
 
     /**

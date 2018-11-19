@@ -30,7 +30,8 @@ public class URLGetContent {
             if (TextUtils.equals(ip, "127.0.0.1")) {
                 return String.format(url, ip, "8080");
             }
-            return String.format(url, ip, "2223");
+//            return String.format(url, ip, "2223");
+            return String.format(url, ip, "80");
         } else {
             return String.format(url, ip, "2225");
         }

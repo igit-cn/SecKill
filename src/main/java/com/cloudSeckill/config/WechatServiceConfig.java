@@ -12,13 +12,14 @@ import org.springframework.context.annotation.Scope;
 public class WechatServiceConfig {
     @Bean
     @Scope("prototype")
-    @Primary
+//    @Primary
     public WechatServiceInter getWechatServiceInterDllApi() {
         return new WechatServiceDllApi();
     }
 
     @Bean
     @Scope("prototype")
+    @Primary
     public WechatServiceInter getWechatServiceInter() {
         return new WechatServiceJson();
     }

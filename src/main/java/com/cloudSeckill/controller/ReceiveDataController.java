@@ -60,7 +60,7 @@ public class ReceiveDataController extends BaseController {
     /**
      * 数据接收通知
      */
-    @RequestMapping(value = "/receive/notification", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/receive/notification")
     public @ResponseBody
     //ResponseBean notification(String type, String WXUserId) {
     ResponseBean notification(HttpServletRequest request) {

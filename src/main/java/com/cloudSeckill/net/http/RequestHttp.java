@@ -50,6 +50,7 @@ public class RequestHttp {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            httpCallBack.onFailure(null);
         }
     }
 
@@ -57,7 +58,9 @@ public class RequestHttp {
         long start = System.currentTimeMillis();
         Request.Builder builder = new Request.Builder();
         builder.url(urlPath);
-        builder.post(RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), Base64.getEncoder().encodeToString(getJsonPost().getBytes()).trim().replace("\n", "")));
+        String jsonPost = getJsonPost();
+        LogUtils.info(urlPath + "请求参数：" + jsonPost);
+        builder.post(RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), Base64.getEncoder().encodeToString(jsonPost.getBytes()).trim().replace("\n", "")));
         try {
             Response execute = new OkHttpClient().newCall(builder.build()).execute();
             if (execute.code() != 200) {
@@ -77,6 +80,7 @@ public class RequestHttp {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            httpCallBack.onFailure(null);
         }
     }
 
@@ -106,6 +110,7 @@ public class RequestHttp {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            httpCallBack.onFailure(null);
         }
     }
 
@@ -135,6 +140,7 @@ public class RequestHttp {
             }
         } catch (URISyntaxException e) {
             e.printStackTrace();
+            httpCallBack.onFailure(null);
         }
 //        Request.Builder builder = new Request.Builder();
 //        builder.url(urlPath);
