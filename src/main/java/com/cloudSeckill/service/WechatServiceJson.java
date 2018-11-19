@@ -227,10 +227,10 @@ public class WechatServiceJson implements WechatServiceInter {
 
     //检查此微信之前是否曾经登陆过，并且未退出，此时把之前的微信号object退出
     private void logoutBeforeLogin(User user) {
-//        if (!StringUtils.isEmpty(redisUtil.getStr(user.getWechatId()))) {
-//            user.setToken(redisUtil.getStr(user.getWechatId()));
-//            wechatLogout(user);
-//        }
+        if (!StringUtils.isEmpty(redisUtil.getStr(user.getWechatId()))) {
+            user.setToken(redisUtil.getStr(user.getWechatId()));
+            wechatLogout(user);
+        }
     }
 
     /**
