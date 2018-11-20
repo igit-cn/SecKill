@@ -256,7 +256,7 @@ public class WechatServiceJson implements WechatServiceInter {
         user.setName(qrCodeStatusBean.nick_name);
         user.setOnlineStatus(1);
         //注销此微信之前登录的痕迹
-        logoutBeforeLogin(user);
+        //logoutBeforeLogin(user);
         user.setToken(userInfo.token);
         //TODO 此处保存IP到数据库
         userMapper.updateByExample(user, queryExample);
