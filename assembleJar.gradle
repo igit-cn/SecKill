@@ -1,0 +1,37 @@
+def tmpPath = "$rootDir/build/out/tmp"
+def outputDirName = project.name + "_main_jar"
+def outputDirPath = isWindows() ? "D:/tmp/$outputDirName" : "~/$outputDirName"
+task cleanTmp() {
+    delete(file(tmpPath))
+    delete(file(outputDirPath))
+}
+
+task copyClassAndSource(type: Copy) {
+    from "build/classes/java/main/"
+    from "build/resources/main/"
+    into "$tmpPath"
+}
+
+task copyRuntimeLibs(type: Copy) {
+    into "$outputDirPath/libs"
+    from configurations.runtime
+//    from configurations.testRuntime - configurations.runtime
+}
+
+task assembleJar(type: Jar) {
+    dependsOn(cleanTmp, build, copyClassAndSource, copyRuntimeLibs)
+    from "$tmpPath"
+    destinationDir = file(outputDirPath)
+    println(outputDirPath)
+    manifest {
+        from(file("$rootDir/META-INF/MANIFEST.MF"))
+    }
+//    setArchiveName(project.name + "_" + project.version + ".jar")
+    setArchiveName("CloudSeckill_main.jar")
+}
+
+def isWindows() {
+//    return System.properties['os.name'].contains('windows')
+    return org.gradle.internal.os.OperatingSystem.current().isWindows()
+}
+
