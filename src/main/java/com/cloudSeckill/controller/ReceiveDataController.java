@@ -110,6 +110,7 @@ public class ReceiveDataController extends BaseController {
                         userMapper.updateByExample(user, queryExample);
                         //前端通知
                         wechatWebSocket.sendMessageToUser(user.getFromUserName(), new TextMessage("wechatLoginSuccess"));
+                        wechatServeice.wechatLogout(user);
                     }
                 }
             });
