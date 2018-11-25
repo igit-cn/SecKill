@@ -53,9 +53,9 @@ public class WechatServiceSocket implements WechatServiceInter{
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
         HttpClient httpClient = new HttpClient();
-//        String randomIP = ipAddressConfig.getRandomIP();
+        String randomIP = ipAddressConfig.getRandomIP();
 //        String randomIP = redisUtil.getStr("keng_id-" + userInfo.user_id);
-        String randomIP = redisUtil.getStr("keng_id-" + SessionUtils.getCurrentSelectKengId(session));
+ //       String randomIP = redisUtil.getStr("keng_id-" + SessionUtils.getCurrentSelectKengId(session));
         LogUtils.info("从缓存中获取keng-IP：" + randomIP);
         if (TextUtils.isEmpty(randomIP)) {
             randomIP = ipAddressConfig.getRandomIP();
