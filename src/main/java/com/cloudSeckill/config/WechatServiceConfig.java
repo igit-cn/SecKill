@@ -1,8 +1,9 @@
 package com.cloudSeckill.config;
 
+import com.cloudSeckill.service.WechatService;
 import com.cloudSeckill.service.WechatServiceDllApi;
 import com.cloudSeckill.service.WechatServiceInter;
-import com.cloudSeckill.service.WechatServiceJson;
+import com.cloudSeckill.service.WechatServiceSocket;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,6 +22,6 @@ public class WechatServiceConfig {
     @Scope("prototype")
     @Primary
     public WechatServiceInter getWechatServiceInter() {
-        return new WechatServiceJson();
+        return new WechatServiceSocket();
     }
 }

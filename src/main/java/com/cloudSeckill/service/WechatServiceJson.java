@@ -36,8 +36,6 @@ public class WechatServiceJson implements WechatServiceInter {
     private UserMapper userMapper;
     @Autowired
     private RedisUtil redisUtil;
-    private int ultimatelyLoginCount = 0;
-    private int heartBeatCount = 0;
 
     public static String name = "hahahaipad";
     public static String mac = Utils.getRandomMac();
@@ -120,10 +118,6 @@ public class WechatServiceJson implements WechatServiceInter {
                             userInfo.isLooperOpen = false;
                             wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
                         }
-//                        if (expired_time[0] > 5) {
-//                            userInfo.isLooperOpen = false;
-//                            wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
-//                        }
                     }
 
                     @Override
@@ -148,17 +142,15 @@ public class WechatServiceJson implements WechatServiceInter {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXMacLogin));
         httpClient.addParams("name", name);
-        httpClient.addParams("object", userInfo.token);
         httpClient.addParams("mac", mac);
         httpClient.addParams("uuid", uuid);
         httpClient.addParams("user", qrCodeStatusBean.user_name);
         httpClient.addParams("password", qrCodeStatusBean.password);
-        httpClient.addParams("data62", "456");
+        httpClient.addParams("data62", "123");
         httpClient.sendAsJson(new HttpCallBack<Object>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object o) {
                 LogUtils.info("MAC登陆结果：" + httpClientEntity.json);
-                ultimatelyLoginCount = 0;
                 ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });
@@ -176,45 +168,31 @@ public class WechatServiceJson implements WechatServiceInter {
         httpClient.sendAsJson(new HttpCallBack<QRCodeLoginBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, QRCodeLoginBean qrCodeLoginBean) {
-                if (qrCodeLoginBean.status == 0) {//登录失败
+                if (qrCodeLoginBean.status == 0) {//登录
                     heartBeat(session, userInfo, qrCodeStatusBean);
                     return;
-                }else {
+                }else if(qrCodeLoginBean.status == -301){
                     ultimatelyLogin(session, userInfo, qrCodeStatusBean);
                 }
             }
         });
     }
 
-    private void setCallBack(UserInfo userInfo) {
-        HttpClient httpClient = new HttpClient();
-        httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXSetRecvMsgCallBack));
-        httpClient.addParams("object", userInfo.token);
-        httpClient.sendAsJson(null);
-    }
-
     /**
      * 心跳
      */
     public void heartBeat(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
-        final int[] count = {0};
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXHeartBeat));
         httpClient.addParams("object", userInfo.token);
         httpClient.sendAsJson(new HttpCallBack<HearBeatBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, HearBeatBean hearBeatBean) {
-                heartBeatCount++;
-                if (heartBeatCount > 5) {
-                    //TODO 失败三次 WebSocket异步通知
-                    return;
+                if (hearBeatBean.status == 0) {
+                    saveWechatInfo(session, userInfo, qrCodeStatusBean);
+                }else {
+                    wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));
                 }
-                if (hearBeatBean.status != 0) {
-                    heartBeat(session, userInfo, qrCodeStatusBean);
-                    return;
-                }
-                setCallBack(userInfo);
-                saveWechatInfo(session, userInfo, qrCodeStatusBean);
             }
         });
     }
@@ -395,7 +373,7 @@ public class WechatServiceJson implements WechatServiceInter {
         httpClient.addParams("method", "WXGetContact");
         httpClient.addParams("object", user.getToken());
         httpClient.addParams("user", user.getWechatId());
-        httpClient.send(new HttpCallBack<UserStatusBean>() {
+        httpClient.sendAsJson(new HttpCallBack<UserStatusBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, UserStatusBean userStatusBean) {
                 userName[0] = userStatusBean.user_name;

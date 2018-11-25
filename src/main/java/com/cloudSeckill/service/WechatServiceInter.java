@@ -26,11 +26,6 @@ public interface WechatServiceInter {
     void looperGetWechatStatus(HttpSession session, UserInfo userInfo);
 
     /**
-     * mac登录
-     */
-    void macLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean);
-
-    /**
      * 最终登录
      */
     void ultimatelyLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean);
