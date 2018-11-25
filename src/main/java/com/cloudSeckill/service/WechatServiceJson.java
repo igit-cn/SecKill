@@ -42,8 +42,6 @@ public class WechatServiceJson implements WechatServiceInter {
     public static String name = "hahahaipad";
     public static String mac = Utils.getRandomMac();
     public static String uuid = Utils.getRandomUUID();
-    public static String uuid2 = "<softtype><k3>9.0.2</k3><k9>iPad</k9><k10>2</k10><k19>58BF17B5-2D8E-4BFB-A97E-38F1226F13F8</k19><k20>" + uuid
-            + "</k20><k21>neihe_5GHz</k21><k22>(null)</k22><k24>" + mac + "</k24><k33>\\345\\276\\256\\344\\277\\241</k33><k47>1</k47><k50>1</k50><k51>com.tencent.xin</k51><k54>iPad4,4</k54></softtype>";
 
 
     /**
@@ -63,8 +61,8 @@ public class WechatServiceJson implements WechatServiceInter {
         userInfo.ipAddress = randomIP;
         httpClient.setUrl(URLGetContent.getFullUrl(randomIP, URLGetContent.WXInitialize));
         httpClient.addParams("name", name);
-        httpClient.addParams("mac", uuid);
-        httpClient.addParams("uuid", uuid2);
+        httpClient.addParams("mac", mac);
+        httpClient.addParams("uuid", uuid);
         httpClient.sendAsJson(new HttpCallBack<Object>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object str) {
@@ -117,7 +115,7 @@ public class WechatServiceJson implements WechatServiceInter {
                         if (qrCodeStatusBean.status == 2) {//授权成功
                             userInfo.isWechatLoginSuccess = true;
                             userInfo.isLooperOpen = false;
-                            macLogin(session, userInfo, qrCodeStatusBean);
+                            ultimatelyLogin(session, userInfo, qrCodeStatusBean);
                         } else if (qrCodeStatusBean.status == 3 || qrCodeStatusBean.status == 4 || expired_time[0] > 140) {//已经超时.已经取消
                             userInfo.isLooperOpen = false;
                             wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
@@ -150,11 +148,12 @@ public class WechatServiceJson implements WechatServiceInter {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXMacLogin));
         httpClient.addParams("name", name);
+        httpClient.addParams("object", userInfo.token);
         httpClient.addParams("mac", mac);
         httpClient.addParams("uuid", uuid);
         httpClient.addParams("user", qrCodeStatusBean.user_name);
         httpClient.addParams("password", qrCodeStatusBean.password);
-        httpClient.addParams("data62", "123");
+        httpClient.addParams("data62", "456");
         httpClient.sendAsJson(new HttpCallBack<Object>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object o) {
@@ -177,17 +176,12 @@ public class WechatServiceJson implements WechatServiceInter {
         httpClient.sendAsJson(new HttpCallBack<QRCodeLoginBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, QRCodeLoginBean qrCodeLoginBean) {
-                ultimatelyLoginCount++;
-                if (ultimatelyLoginCount > 5) {
-                    //TODO 失败三次 WebSocket异步通知
-                    return;
-                }
                 if (qrCodeLoginBean.status == 0) {//登录失败
-                    heartBeatCount = 0;
                     heartBeat(session, userInfo, qrCodeStatusBean);
                     return;
+                }else {
+                    ultimatelyLogin(session, userInfo, qrCodeStatusBean);
                 }
-                ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });
     }
@@ -267,15 +261,15 @@ public class WechatServiceJson implements WechatServiceInter {
         receiveDataController.addToken(user);
 
         //发送初始化通知
-        receiveDataController.initNotification(user.getToken(), user.getWechatId());
+        receiveDataController.sendNotification(userInfo, qrCodeStatusBean);
 
         //微信信息绑定,推送前端结果
         wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("wechatLoginSuccess"));
 
         //同步通讯录
-        List<SyncContactBean> chainList = new ArrayList();
-        syncContact(user, chainList);
-        redisUtil.set(qrCodeStatusBean.user_name, chainList);
+        //List<SyncContactBean> chainList = new ArrayList();
+        //syncContact(user, chainList);
+        //redisUtil.set(qrCodeStatusBean.user_name, chainList);
 
         LogUtils.info("用户 : " + user.getName() + " 扫码登录成功 来自账号 : " + user.getFromUserName());
     }

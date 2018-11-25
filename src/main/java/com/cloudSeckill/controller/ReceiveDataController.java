@@ -6,10 +6,8 @@ import com.cloudSeckill.dao.domain.User;
 import com.cloudSeckill.dao.domain.UserExample;
 import com.cloudSeckill.dao.mapper.RedPacketMapper;
 import com.cloudSeckill.dao.mapper.UserMapper;
-import com.cloudSeckill.data.response.DataInfoBean;
-import com.cloudSeckill.data.response.RedPickBean;
-import com.cloudSeckill.data.response.ResponseBean;
-import com.cloudSeckill.data.response.SyncContactBean;
+import com.cloudSeckill.data.info.UserInfo;
+import com.cloudSeckill.data.response.*;
 import com.cloudSeckill.net.http.callback.HttpCallBack;
 import com.cloudSeckill.net.http.callback.HttpClientEntity;
 import com.cloudSeckill.net.web_socket.WechatWebSocket;
@@ -110,6 +108,7 @@ public class ReceiveDataController extends BaseController {
                         userMapper.updateByExample(user, queryExample);
                         //前端通知
                         wechatWebSocket.sendMessageToUser(user.getFromUserName(), new TextMessage("wechatLoginSuccess"));
+                        wechatServeice.wechatLogout(user);
                     }
                 }
             });
@@ -197,6 +196,15 @@ public class ReceiveDataController extends BaseController {
                         "000 查看当前状态" + "\n" +
                         "111 查看指令"
                 , chatRoom, false);
+    }
+
+    /**
+     * 初始化通知
+     */
+    public void sendNotification(UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
+        User user = tokenList.get(userInfo.token);
+        sendTextMsg(user,
+                "初始化完成", qrCodeStatusBean.user_name, false);
     }
 
     /**
