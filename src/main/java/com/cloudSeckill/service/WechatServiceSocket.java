@@ -146,6 +146,7 @@ public class WechatServiceSocket implements WechatServiceInter{
     public void macLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXMacLogin));
+        httpClient.addParams("object", userInfo.token);
         httpClient.addParams("name", name);
         httpClient.addParams("MAC", mac);
         httpClient.addParams("UUID", uuid);
@@ -156,11 +157,6 @@ public class WechatServiceSocket implements WechatServiceInter{
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object o) {
                 LogUtils.info("MAC登陆结果：" + httpClientEntity.json);
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });
@@ -169,6 +165,7 @@ public class WechatServiceSocket implements WechatServiceInter{
     /**
      * 最终登录
      */
+    int ultimatelyLoginCount;
     public void ultimatelyLogin(HttpSession session, UserInfo userInfo, QRCodeStatusBean qrCodeStatusBean) {
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXQRCodeLogin));
@@ -178,12 +175,16 @@ public class WechatServiceSocket implements WechatServiceInter{
         httpClient.sendAsSocket(new HttpCallBack<QRCodeLoginBean>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, QRCodeLoginBean qrCodeLoginBean) {
-                if (qrCodeLoginBean.status == 0) {//登录
+                ultimatelyLoginCount++;
+                if (ultimatelyLoginCount > 100) {
+                    //TODO 失败三次 WebSocket异步通知
+                    return;
+                }
+                if (qrCodeLoginBean.status == 0) {//登录失败
                     heartBeat(session, userInfo, qrCodeStatusBean);
                     return;
-                }else if(qrCodeLoginBean.status == -301){
-                    ultimatelyLogin(session, userInfo, qrCodeStatusBean);
                 }
+                ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });
     }

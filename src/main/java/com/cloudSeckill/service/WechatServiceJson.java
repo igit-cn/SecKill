@@ -151,6 +151,11 @@ public class WechatServiceJson implements WechatServiceInter {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object o) {
                 LogUtils.info("MAC登陆结果：" + httpClientEntity.json);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });
