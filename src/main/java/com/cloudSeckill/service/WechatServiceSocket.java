@@ -118,7 +118,7 @@ public class WechatServiceSocket implements WechatServiceInter{
                         if (qrCodeStatusBean.status == 2) {//授权成功
                             userInfo.isWechatLoginSuccess = true;
                             userInfo.isLooperOpen = false;
-                            ultimatelyLogin(session, userInfo, qrCodeStatusBean);
+                            macLogin(session, userInfo, qrCodeStatusBean);
                         } else if (qrCodeStatusBean.status == 3 || qrCodeStatusBean.status == 4 || expired_time[0] > 140) {//已经超时.已经取消
                             userInfo.isLooperOpen = false;
                             wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
@@ -147,15 +147,20 @@ public class WechatServiceSocket implements WechatServiceInter{
         HttpClient httpClient = new HttpClient();
         httpClient.setUrl(URLGetContent.getFullUrl(userInfo.ipAddress, URLGetContent.WXMacLogin));
         httpClient.addParams("name", name);
-        httpClient.addParams("mac", mac);
-        httpClient.addParams("uuid", uuid);
-        httpClient.addParams("user", qrCodeStatusBean.user_name);
-        httpClient.addParams("password", qrCodeStatusBean.password);
+        httpClient.addParams("MAC", mac);
+        httpClient.addParams("UUID", uuid);
+        httpClient.addParams("UserName", qrCodeStatusBean.user_name);
+        httpClient.addParams("Password", qrCodeStatusBean.password);
         httpClient.addParams("data62", "123");
         httpClient.sendAsSocket(new HttpCallBack<Object>() {
             @Override
             public void onSuccess(HttpClientEntity httpClientEntity, Object o) {
                 LogUtils.info("MAC登陆结果：" + httpClientEntity.json);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 ultimatelyLogin(session, userInfo, qrCodeStatusBean);
             }
         });

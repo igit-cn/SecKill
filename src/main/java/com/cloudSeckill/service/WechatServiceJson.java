@@ -48,9 +48,9 @@ public class WechatServiceJson implements WechatServiceInter {
     public byte[] initWechatClient(HttpSession session, UserInfo userInfo) {
         final byte[][] content = {null};
         HttpClient httpClient = new HttpClient();
-//        String randomIP = ipAddressConfig.getRandomIP();
+        String randomIP = ipAddressConfig.getRandomIP();
 //        String randomIP = redisUtil.getStr("keng_id-" + userInfo.user_id);
-        String randomIP = redisUtil.getStr("keng_id-" + SessionUtils.getCurrentSelectKengId(session));
+//        String randomIP = redisUtil.getStr("keng_id-" + SessionUtils.getCurrentSelectKengId(session));
         LogUtils.info("从缓存中获取keng-IP：" + randomIP);
         if (TextUtils.isEmpty(randomIP)) {
             randomIP = ipAddressConfig.getRandomIP();
@@ -113,7 +113,7 @@ public class WechatServiceJson implements WechatServiceInter {
                         if (qrCodeStatusBean.status == 2) {//授权成功
                             userInfo.isWechatLoginSuccess = true;
                             userInfo.isLooperOpen = false;
-                            ultimatelyLogin(session, userInfo, qrCodeStatusBean);
+                            macLogin(session, userInfo, qrCodeStatusBean);
                         } else if (qrCodeStatusBean.status == 3 || qrCodeStatusBean.status == 4 || expired_time[0] > 140) {//已经超时.已经取消
                             userInfo.isLooperOpen = false;
                             wechatWebSocket.sendMessageToUser(userInfo.userName, new TextMessage("closeQRCodeByTimeout"));//通知前端二维码超时
